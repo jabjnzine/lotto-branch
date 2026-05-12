@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@lotto/shared": ["../../packages/shared/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "ts-node": {
+    "require": ["reflect-metadata"],
+    "transpileOnly": false,
+    "files": true,
+    "compilerOptions": {
+      "module": "CommonJS",
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "strictPropertyInitialization": false
+    }
+  }
+}
