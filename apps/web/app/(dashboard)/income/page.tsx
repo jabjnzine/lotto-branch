@@ -8,8 +8,11 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { formatCurrency, formatThaiDate } from '@/lib/utils'
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { cn, formatCurrency, formatThaiDate } from '@/lib/utils'
+import { BET_TYPE_LABEL, BetType } from '@lotto/shared'
+import { TrendingUp, TrendingDown, DollarSign, Target, BarChart3 } from 'lucide-react'
+
+const POS_BLUE = '#007bff'
 
 const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'destructive' | 'warning' | 'default' }> = {
   open: { label: 'เปิดรับ', variant: 'success' },
@@ -19,8 +22,8 @@ const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'de
 }
 
 export default function IncomePage() {
-  const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null)
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null)
+  const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null)
 
   const { data: lotteryTypes, isLoading } = useLotteryTypes()
   const { data: rounds } = useRounds(selectedTypeId ?? undefined, 'resulted')
@@ -38,160 +41,218 @@ export default function IncomePage() {
   const profit = summary ? parseFloat(summary.profit) : 0
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <PageHeader title="รายได้" description="สรุปรายได้แยกตามงวด" />
+    <div className="mx-auto max-w-6xl space-y-4 pb-6">
+      <PageHeader title="รายได้" description="สรุปกำไร-ขาดทุนแยกตามงวด" />
 
-      <div className="flex gap-4">
-        {/* Sidebar */}
-        <div className="w-64 flex-shrink-0 space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {lotteryTypes?.map((lt) => (
-              <button
-                key={lt.id}
-                onClick={() => {
-                  setSelectedTypeId(lt.id)
-                  setSelectedRoundId(null)
-                }}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                  selectedTypeId === lt.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border border-slate-200 text-slate-600'
-                }`}
+      {/* ประเภทหวย */}
+      <div className="flex flex-wrap gap-2 rounded-lg border border-blue-200 bg-white p-3 shadow-sm">
+        {lotteryTypes?.map((lt) => (
+          <button
+            key={lt.id}
+            type="button"
+            onClick={() => {
+              setSelectedTypeId(lt.id)
+              setSelectedRoundId(null)
+            }}
+            className={cn(
+              'rounded-full px-4 py-2 text-sm font-medium transition-colors',
+              selectedTypeId === lt.id
+                ? 'bg-[#007bff] text-white shadow-sm'
+                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+            )}
+          >
+            {lt.name}
+          </button>
+        ))}
+      </div>
+
+      {!selectedTypeId && (
+        <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/40 py-16 text-center text-slate-500">
+          <BarChart3 className="h-10 w-10 mx-auto mb-3 text-blue-300" />
+          <p className="text-lg">เลือกประเภทหวยเพื่อดูรายได้</p>
+        </div>
+      )}
+
+      {selectedTypeId && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+          {/* Sidebar */}
+          <div className="lg:col-span-3">
+            <div className="overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
+              <div
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white"
+                style={{ backgroundColor: POS_BLUE }}
               >
-                {lt.name}
-              </button>
-            ))}
+                <Target className="h-4 w-4" />
+                งวดที่ออกผลแล้ว
+              </div>
+              <div className="max-h-[60vh] overflow-y-auto">
+                {sortedRounds.map((round) => {
+                  const rStatus = roundStatusBadge[round.status] ?? { label: round.status, variant: 'default' as const }
+                  return (
+                    <button
+                      key={round.id}
+                      onClick={() => setSelectedRoundId(round.id)}
+                      className={cn(
+                        'w-full text-left px-4 py-3 border-b border-slate-100 transition-colors hover:bg-slate-50',
+                        selectedRoundId === round.id && 'bg-blue-50 border-l-2 border-l-[#007bff]',
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{formatThaiDate(round.draw_date)}</span>
+                        <Badge variant={rStatus.variant} className="text-[10px] px-1.5 py-0">
+                          {rStatus.label}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">{round.lottery_type?.name}</p>
+                    </button>
+                  )
+                })}
+                {(!rounds || rounds.length === 0) && (
+                  <p className="text-xs text-slate-400 text-center py-8">ไม่มีงวดที่ออกผลแล้ว</p>
+                )}
+              </div>
+            </div>
           </div>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs text-slate-500">งวดที่ออกผลแล้ว</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 max-h-80 overflow-y-auto">
-              {sortedRounds.map((round) => {
-                const rStatus = roundStatusBadge[round.status] ?? { label: round.status, variant: 'default' as const }
-                return (
-                  <button
-                    key={round.id}
-                    onClick={() => setSelectedRoundId(round.id)}
-                    className={`w-full text-left px-3 py-2.5 border-b border-slate-50 text-sm hover:bg-slate-50 ${
-                      selectedRoundId === round.id ? 'bg-blue-50 text-blue-700 font-medium border-l-2 border-l-blue-500' : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{formatThaiDate(round.draw_date)}</span>
-                      <Badge variant={rStatus.variant} className="text-[10px] px-1.5 py-0">
-                        {rStatus.label}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{round.lottery_type?.name}</p>
-                  </button>
-                )
-              })}
-              {(!rounds || rounds.length === 0) && (
-                <p className="text-xs text-slate-400 text-center py-4">ไม่มีงวด</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+          {/* Main */}
+          <div className="lg:col-span-9 space-y-4">
+            {summaryLoading && <LoadingSpinner className="py-12" />}
 
-        {/* Summary */}
-        <div className="flex-1 space-y-4">
-          {summaryLoading && <LoadingSpinner />}
-          {summary && !summaryLoading && (
-            <>
-              {/* KPIs */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Card>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <DollarSign className="h-5 w-5 text-blue-600" />
+            {summary && !summaryLoading && (
+              <>
+                {/* KPIs */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+                        <DollarSign className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400">ยอดรับรวม</p>
+                        <p className="text-xl font-bold tabular-nums text-slate-900">
+                          {formatCurrency(summary.totalReceived)}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-400">ยอดรับรวม</p>
-                      <p className="text-xl font-bold text-slate-900">
-                        {formatCurrency(summary.totalReceived)}
-                      </p>
+                  </div>
+                  <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50">
+                        <TrendingDown className="h-5 w-5 text-red-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400">ยอดจ่ายรวม</p>
+                        <p className="text-xl font-bold tabular-nums text-slate-900">
+                          {formatCurrency(summary.totalPayout)}
+                        </p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="p-2 bg-red-50 rounded-lg">
-                      <TrendingDown className="h-5 w-5 text-red-500" />
+                  </div>
+                  <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                        profit >= 0 ? 'bg-green-50' : 'bg-red-50',
+                      )}>
+                        <TrendingUp className={cn(
+                          'h-5 w-5',
+                          profit >= 0 ? 'text-green-600' : 'text-red-500',
+                        )} />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400">กำไร/ขาดทุน</p>
+                        <p className={cn(
+                          'text-xl font-bold tabular-nums',
+                          profit >= 0 ? 'text-green-600' : 'text-red-500',
+                        )}>
+                          {profit >= 0 ? '+' : ''}{formatCurrency(summary.profit)}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-400">ยอดจ่ายรวม</p>
-                      <p className="text-xl font-bold text-slate-900">
-                        {formatCurrency(summary.totalPayout)}
-                      </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  {/* By Lottery Type */}
+                  <div className="overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
+                    <div
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white"
+                      style={{ backgroundColor: POS_BLUE }}
+                    >
+                      <BarChart3 className="h-4 w-4" />
+                      แยกตามประเภทหวย
                     </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${profit >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
-                      <TrendingUp className={`h-5 w-5 ${profit >= 0 ? 'text-green-600' : 'text-red-500'}`} />
+                    <div className="divide-y divide-slate-100">
+                      {summary.byLotteryType.map((lt: { code: string; name: string; received: string; payout: string; profit: string }) => {
+                        const ltProfit = parseFloat(lt.profit)
+                        return (
+                          <div key={lt.code} className="flex items-center justify-between px-4 py-3">
+                            <span className="text-sm font-medium text-slate-700">{lt.name}</span>
+                            <div className="flex items-center gap-4 text-sm tabular-nums">
+                              <span className="text-slate-500">รับ {formatCurrency(lt.received)}</span>
+                              <span className="text-red-500">จ่าย {formatCurrency(lt.payout)}</span>
+                              <span className={cn(
+                                'font-semibold',
+                                ltProfit >= 0 ? 'text-green-600' : 'text-red-600',
+                              )}>
+                                {ltProfit >= 0 ? '+' : ''}{formatCurrency(lt.profit)}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-400">กำไร/ขาดทุน</p>
-                      <p className={`text-xl font-bold ${profit >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                        {profit >= 0 ? '+' : ''}{formatCurrency(summary.profit)}
-                      </p>
+                  </div>
+
+                  {/* By Bet Type */}
+                  <div className="overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
+                    <div
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white"
+                      style={{ backgroundColor: POS_BLUE }}
+                    >
+                      <Target className="h-4 w-4" />
+                      แยกตามประเภทการแทง
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="grid grid-cols-2 gap-3 p-4">
+                      {summary.byBetType.map((bt: { betType: string; received: string; payout: string }) => {
+                        const btProfit = parseFloat(bt.received) - parseFloat(bt.payout)
+                        return (
+                          <div key={bt.betType} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                            <p className="text-xs font-medium text-slate-600 mb-1.5">
+                              {BET_TYPE_LABEL[bt.betType as BetType] ?? bt.betType}
+                            </p>
+                            <div className="space-y-0.5">
+                              <p className="text-sm font-bold tabular-nums text-slate-900">
+                                รับ {formatCurrency(bt.received)}
+                              </p>
+                              <p className="text-xs text-red-500 tabular-nums">
+                                จ่าย {formatCurrency(bt.payout)}
+                              </p>
+                              <p className={cn(
+                                'text-xs font-semibold tabular-nums',
+                                btProfit >= 0 ? 'text-green-600' : 'text-red-600',
+                              )}>
+                                {btProfit >= 0 ? '+' : ''}{formatCurrency(String(btProfit))}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {!selectedRoundId && !summaryLoading && (
+              <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/40 py-16 text-center text-slate-500">
+                <Target className="h-10 w-10 mx-auto mb-3 text-blue-300" />
+                <p className="text-lg">เลือกงวดเพื่อดูรายงานรายได้</p>
               </div>
-
-              {/* By Lottery Type */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">แยกตามประเภทหวย</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {summary.byLotteryType.map((lt) => (
-                      <div key={lt.code} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                        <span className="text-sm font-medium text-slate-700">{lt.name}</span>
-                        <div className="flex gap-6 text-sm">
-                          <span className="text-slate-500">รับ {formatCurrency(lt.received)}</span>
-                          <span className="text-red-500">จ่าย {formatCurrency(lt.payout)}</span>
-                          <span className={parseFloat(lt.profit) >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                            {parseFloat(lt.profit) >= 0 ? '+' : ''}{formatCurrency(lt.profit)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* By Bet Type */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">แยกตามประเภทการแทง</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {summary.byBetType.map((bt) => (
-                      <div key={bt.betType} className="bg-slate-50 rounded-lg p-3">
-                        <p className="text-xs font-medium text-slate-600 mb-1">{bt.betType}</p>
-                        <p className="text-sm font-bold text-slate-900">{formatCurrency(bt.received)}</p>
-                        <p className="text-xs text-red-400">จ่าย {formatCurrency(bt.payout)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-          {!selectedRoundId && !summaryLoading && (
-            <div className="flex items-center justify-center h-48 text-slate-400">
-              เลือกงวดเพื่อดูรายงานรายได้
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
