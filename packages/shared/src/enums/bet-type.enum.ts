@@ -34,6 +34,54 @@ export const BET_TYPE_DIGIT_COUNT: Record<BetType, number> = {
   [BetType.RUN_BOTTOM]: 1,
 }
 
+/** จัดกลุ่มประเภทการแทงสำหรับ UI (สามตัว / ห้าตัว / สองตัว / เลขวิ่ง) */
+export type BetTypeGroupId = 'three_digit' | 'five_digit' | 'two_digit' | 'run'
+
+export const BET_TYPE_GROUP_LABEL: Record<BetTypeGroupId, string> = {
+  three_digit: 'สามตัว',
+  five_digit: 'ห้าตัว',
+  two_digit: 'สองตัว',
+  run: 'เลขวิ่ง',
+}
+
+const THREE_DIGIT = new Set<BetType>([
+  BetType.THREE_TOP,
+  BetType.THREE_TOD,
+  BetType.THREE_FRONT,
+  BetType.THREE_BACK,
+])
+
+function betTypeGroupId(betType: BetType): BetTypeGroupId {
+  if (THREE_DIGIT.has(betType)) return 'three_digit'
+  if (betType === BetType.FIVE_TOP) return 'five_digit'
+  if (betType === BetType.TWO_TOP || betType === BetType.TWO_BOTTOM) return 'two_digit'
+  return 'run'
+}
+
+const GROUP_ORDER: BetTypeGroupId[] = ['three_digit', 'five_digit', 'two_digit', 'run']
+
+/** แบ่งตามลำดับที่ส่งเข้ามา (มักมาจาก LOTTERY_TYPE_BET_TYPES) — คืนเฉพาะกลุ่มที่มีประเภทจริง */
+export function groupBetTypesForUi(allowedInOrder: BetType[]): {
+  groupId: BetTypeGroupId
+  title: string
+  betTypes: BetType[]
+}[] {
+  const buckets: Record<BetTypeGroupId, BetType[]> = {
+    three_digit: [],
+    five_digit: [],
+    two_digit: [],
+    run: [],
+  }
+  for (const bt of allowedInOrder) {
+    buckets[betTypeGroupId(bt)].push(bt)
+  }
+  return GROUP_ORDER.filter((id) => buckets[id].length > 0).map((id) => ({
+    groupId: id,
+    title: BET_TYPE_GROUP_LABEL[id],
+    betTypes: buckets[id],
+  }))
+}
+
 export const LOTTERY_TYPE_BET_TYPES: Record<string, BetType[]> = {
   TH: [
     BetType.THREE_TOP,
