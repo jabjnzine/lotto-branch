@@ -29,6 +29,7 @@ import {
   groupBetTypesForUi,
 } from '@lotto/shared'
 import { cn, dayjs, formatCurrency, formatThaiDate } from '@/lib/utils'
+import { useToastStore } from '@/lib/stores/useToastStore'
 import { downloadHtmlAsXls } from '@/lib/export-utils'
 import {
   CalendarDays,
@@ -104,6 +105,7 @@ export default function BetPage() {
   const { data: restrictions } = useRestrictions(currentRound?.id ?? null)
   const { draftItems, addItem, removeItem, clearItems } = useBetStore()
   const createBet = useCreateBet()
+  const toast = useToastStore((s) => s.toast)
 
   const selectedType = lotteryTypes?.find((lt) => lt.id === selectedTypeId)
 
@@ -219,6 +221,12 @@ export default function BetPage() {
         bet_type: item.bet_type,
         amount: item.amount,
       })),
+    })
+
+    toast({
+      title: 'บันทึกบิลสำเร็จ',
+      description: `เลขที่บิล ${draftBillNo} จำนวน ${draftItems.length} รายการ`,
+      variant: 'success',
     })
 
     // Show receipt dialog

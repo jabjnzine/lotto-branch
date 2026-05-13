@@ -5,6 +5,7 @@ import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
 import { useRounds } from '@/lib/hooks/useRounds'
 import { useResult, useSaveResult } from '@/lib/hooks/useResults'
 import { useFetchThaiResult, useFetchLaoResult } from '@/lib/hooks/useRounds'
+import { useCalculateWinners } from '@/lib/hooks/useBets'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ function ResultForm({
 }) {
   const { data: result } = useResult(roundId)
   const saveResult = useSaveResult(roundId)
+  const calculateWinners = useCalculateWinners()
 
   const [firstPrize, setFirstPrize] = useState('')
   const [threeTop, setThreeTop] = useState('')
@@ -77,6 +79,9 @@ function ResultForm({
       is_official: false,
     })
     setSaved(true)
+
+    // Auto-calculate winners after saving result
+    calculateWinners.mutate(roundId)
   }
 
   const isThaiFull = resultStructure === ResultStructure.THAI_FULL
@@ -181,9 +186,19 @@ function ResultForm({
           <span>บันทึกผลสำเร็จ</span>
         </div>
       )}
-      <Button onClick={handleSave} disabled={saveResult.isPending} className="w-full">
+      <Button onClick={handleSave} disabled={saveResult.isPending || calculateWinners.isPending} className="w-full">
         {saveResult.isPending ? 'กำลังบันทึก...' : 'บันทึกผล'}
       </Button>
+      {result && (
+        <Button
+          variant="outline"
+          onClick={() => calculateWinners.mutate(roundId)}
+          disabled={calculateWinners.isPending}
+          className="w-full"
+        >
+          {calculateWinners.isPending ? 'กำลังคำนวณ...' : 'คำนวณถูก-ผิด'}
+        </Button>
+      )}
     </div>
   )
 }

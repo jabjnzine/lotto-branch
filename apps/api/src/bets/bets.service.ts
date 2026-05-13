@@ -269,6 +269,98 @@ export class BetsService {
     this.logger.log(`คำนวณเสร็จ: ${bets.length} บิล`)
   }
 
+  async getRoundSummary(roundId: string) {
+    const bets = await this.betsRepo.find({
+      where: { round_id: roundId },
+      relations: ['items'],
+    })
+
+    const won = bets.filter((b) => b.status === BetStatus.WON)
+    const lost = bets.filter((b) => b.status === BetStatus.LOST)
+    const cancelled = bets.filter((b) => b.status === BetStatus.CANCELLED)
+
+    const totalReceived = bets.reduce((sum, b) => sum + Number(b.total_amount), 0)
+    const totalPayout = won.reduce(
+      (sum, b) => sum + b.items.reduce((s, i) => s + Number(i.win_amount ?? 0), 0),
+      0,
+    )
+
+    return {
+      totalBets: bets.length,
+      wonCount: won.length,
+      lostCount: lost.length,
+      cancelledCount: cancelled.length,
+      totalReceived,
+      totalPayout,
+      profit: totalReceived - totalPayout,
+    }
+  }
+
+  async getTodayAll(page = 1, pageSize = 20) {
+    const today = new Date().toISOString().slice(0, 10)
+
+    const qb = this.betsRepo
+      .createQueryBuilder('b')
+      .innerJoinAndSelect('b.items', 'bi')
+      .innerJoinAndSelect('b.round', 'r')
+      .innerJoinAndSelect('r.lottery_type', 'lt')
+      .where('r.draw_date = :today', { today })
+      .andWhere('b.status != :cancelled', { cancelled: BetStatus.CANCELLED })
+
+    const total = await qb.getCount()
+
+    const bets = await qb
+      .orderBy('b.created_at', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getMany()
+
+    const grouped: Record<string, {
+      typeId: string
+      typeName: string
+      typeCode: string
+      roundId: string
+      drawDate: string
+      bets: typeof bets
+      totalAmount: number
+      betCount: number
+      itemCount: number
+    }> = {}
+
+    for (const bet of bets) {
+      const typeId = bet.round.lottery_type.id
+      if (!grouped[typeId]) {
+        grouped[typeId] = {
+          typeId,
+          typeName: bet.round.lottery_type.name,
+          typeCode: bet.round.lottery_type.code,
+          roundId: bet.round.id,
+          drawDate: bet.round.draw_date,
+          bets: [],
+          totalAmount: 0,
+          betCount: 0,
+          itemCount: 0,
+        }
+      }
+      grouped[typeId].bets.push(bet)
+      grouped[typeId].totalAmount += Number(bet.total_amount)
+      grouped[typeId].betCount++
+      grouped[typeId].itemCount += bet.items.length
+    }
+
+    const totalAmount = bets.reduce((sum, b) => sum + Number(b.total_amount), 0)
+
+    return {
+      date: today,
+      totalBets: total,
+      totalAmount,
+      groups: Object.values(grouped),
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    }
+  }
+
   async getTodaySummary() {
     const today = new Date().toISOString().slice(0, 10)
 

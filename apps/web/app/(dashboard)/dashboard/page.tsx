@@ -67,7 +67,7 @@ export default function DashboardPage() {
       {/* Today's Summary */}
       {(summaryLoading || incomeLoading) ? (
         <StatCardGridSkeleton />
-      ) : (todaySummary || todayIncome) ? (
+      ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
@@ -77,7 +77,7 @@ export default function DashboardPage() {
               <div>
                 <p className="text-xs text-slate-400">จำนวนบิล</p>
                 <p className="text-xl font-bold tabular-nums text-slate-900">
-                  {todaySummary?.billCount?.toLocaleString() ?? '—'} <span className="text-sm font-normal text-slate-500">บิล</span>
+                  {(todaySummary?.billCount ?? 0).toLocaleString()} <span className="text-sm font-normal text-slate-500">บิล</span>
                 </p>
               </div>
             </div>
@@ -110,19 +110,19 @@ export default function DashboardPage() {
           </div>
           <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${todayIncome?.isProfitable ? 'bg-green-50' : 'bg-red-50'}`}>
-                <TrendingUp className={`h-5 w-5 ${todayIncome?.isProfitable ? 'text-green-600' : 'text-red-500'}`} />
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${todayIncome && Number(todayIncome.profit) > 0 ? 'bg-green-50' : todayIncome && Number(todayIncome.profit) < 0 ? 'bg-red-50' : 'bg-slate-50'}`}>
+                <TrendingUp className={`h-5 w-5 ${todayIncome && Number(todayIncome.profit) > 0 ? 'text-green-600' : todayIncome && Number(todayIncome.profit) < 0 ? 'text-red-500' : 'text-slate-400'}`} />
               </div>
               <div>
                 <p className="text-xs text-slate-400">กำไร/ขาดทุน</p>
-                <p className={`text-xl font-bold tabular-nums ${todayIncome?.isProfitable ? 'text-green-600' : 'text-red-500'}`}>
-                  {todayIncome ? `${todayIncome.isProfitable ? '+' : ''}${formatCurrency(todayIncome.profit)}` : '—'} <span className="text-sm font-normal text-slate-500">บาท</span>
+                <p className={`text-xl font-bold tabular-nums ${todayIncome && Number(todayIncome.profit) > 0 ? 'text-green-600' : todayIncome && Number(todayIncome.profit) < 0 ? 'text-red-500' : 'text-slate-600'}`}>
+                  {todayIncome ? `${todayIncome.isProfitable ? '+' : ''}${formatCurrency(todayIncome.profit)}` : formatCurrency(0)} <span className="text-sm font-normal text-slate-500">บาท</span>
                 </p>
               </div>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
 
       {/* Today's Rounds */}
       <Card>

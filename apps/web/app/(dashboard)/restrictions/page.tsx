@@ -20,6 +20,7 @@ import {
   groupBetTypesForUi,
 } from '@lotto/shared'
 import { cn, formatThaiDate } from '@/lib/utils'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Trash2, Plus, RefreshCw, Ban, ShieldCheck } from 'lucide-react'
 
 const POS_BLUE = '#0284c7'
@@ -43,6 +44,7 @@ export default function RestrictionsPage() {
   const { data: restrictions, isLoading: restrictLoading, refetch } = useRestrictions(currentRound?.id ?? null)
   const createRestriction = useCreateRestriction(currentRound?.id ?? '')
   const deleteRestriction = useDeleteRestriction()
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   useEffect(() => {
     if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
@@ -351,7 +353,7 @@ export default function RestrictionsPage() {
                             )}
                           </div>
                           <button
-                            onClick={() => deleteRestriction.mutate(r.id)}
+                            onClick={() => setDeleteTarget(r.id)}
                             className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#0284c7] transition-colors hover:bg-sky-50 hover:text-red-600"
                             aria-label="ลบเลขอั้น"
                           >
@@ -375,6 +377,19 @@ export default function RestrictionsPage() {
           )}
         </>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        title="ลบเลขอั้น"
+        message="คุณแน่ใจหรือไม่ที่จะลบเลขอั้นรายการนี้? การกระทำนี้ไม่สามารถย้อนกลับได้"
+        confirmLabel="ลบทันที"
+        onConfirm={() => {
+          if (deleteTarget) {
+            deleteRestriction.mutate(deleteTarget)
+            setDeleteTarget(null)
+          }
+        }}
+      />
     </div>
   )
 }

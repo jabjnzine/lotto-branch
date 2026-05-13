@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
 import { useRounds, type LotteryRound } from '@/lib/hooks/useRounds'
-import { useBets, useExportBets } from '@/lib/hooks/useBets'
+import { useBets, useExportBets, useCancelBet, useRoundSummary, useTodayAllBets } from '@/lib/hooks/useBets'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { Pagination } from '@/components/shared/Pagination'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,20 +33,27 @@ export default function ReportsPage() {
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null)
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [allPage, setAllPage] = useState(1)
   const [expandedBetId, setExpandedBetId] = useState<string | null>(null)
 
   const { data: lotteryTypes, isLoading } = useLotteryTypes()
-  const { data: rounds } = useRounds(selectedTypeId ?? undefined)
+  const { data: rounds } = useRounds(selectedTypeId && selectedTypeId !== '__all__' ? selectedTypeId : undefined)
   const { data: betsData, isLoading: betsLoading } = useBets(selectedRoundId, page, 20)
   const exportBets = useExportBets()
+  const cancelBet = useCancelBet()
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null)
+  const { data: todayAllBets, isLoading: todayAllLoading } = useTodayAllBets(allPage, 20)
 
   useEffect(() => {
     if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
-      setSelectedTypeId(lotteryTypes[0].id)
+      setSelectedTypeId('__all__')
     }
   }, [selectedTypeId, lotteryTypes])
 
   const selectedRound = rounds?.find((r) => r.id === selectedRoundId)
+  const { data: roundSummary } = useRoundSummary(
+    selectedRound && selectedRound.status === 'resulted' ? selectedRoundId : null,
+  )
 
   const sortedRounds = useMemo(() => {
     if (!rounds) return []
@@ -68,17 +77,6 @@ export default function ReportsPage() {
     0,
   ) ?? 0
 
-  const winLossSummary = useMemo(() => {
-    if (!betsData?.items) return null
-    const won = betsData.items.filter((b: { status: string }) => b.status === 'won')
-    const lost = betsData.items.filter((b: { status: string }) => b.status === 'lost')
-    const payout = won.reduce((sum: number, b: { items?: Array<{ win_amount?: string }> }) =>
-      sum + (b.items ?? []).reduce((s: number, i: { win_amount?: string }) =>
-        s + Number(i.win_amount ?? 0), 0),
-    0)
-    return { wonCount: won.length, lostCount: lost.length, payout, profit: totalAmount - payout }
-  }, [betsData?.items, totalAmount])
-
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader title="รายงาน">
@@ -97,6 +95,19 @@ export default function ReportsPage() {
 
       {/* Type Selector */}
       <div className="flex flex-wrap gap-2 rounded-lg border border-sky-200 bg-white p-3 shadow-sm">
+        <button
+          onClick={() => {
+            setSelectedTypeId('__all__')
+            setSelectedRoundId(null)
+          }}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            selectedTypeId === '__all__'
+              ? 'bg-sky-600 text-white'
+              : 'bg-white border border-sky-200 text-slate-700 hover:bg-sky-50'
+          }`}
+        >
+          ทั้งหมด
+        </button>
         {lotteryTypes?.map((lt) => (
           <button
             key={lt.id}
@@ -116,7 +127,123 @@ export default function ReportsPage() {
         ))}
       </div>
 
-      {selectedTypeId && (
+      {/* All Types Unified View */}
+      {selectedTypeId === '__all__' && (
+        <div className="space-y-4">
+          {todayAllLoading ? (
+            <LoadingSpinner className="py-12" />
+          ) : todayAllBets ? (
+            <>
+              {/* Grand Total KPI */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                  <p className="text-xs text-slate-400">วันที่</p>
+                  <p className="text-sm font-semibold text-slate-900 mt-0.5">
+                    {formatThaiDate(todayAllBets.date)}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                  <p className="text-xs text-slate-400">จำนวนบิลทั้งหมด</p>
+                  <p className="text-xl font-bold text-slate-900 tabular-nums mt-0.5">
+                    {todayAllBets.totalBets.toLocaleString()} <span className="text-sm font-normal text-slate-500">บิล</span>
+                  </p>
+                </div>
+                <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                  <p className="text-xs text-slate-400">ยอดรับรวมทั้งวัน</p>
+                  <p className="text-xl font-bold text-sky-600 tabular-nums mt-0.5">
+                    {formatCurrency(todayAllBets.totalAmount)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Groups by Lottery Type */}
+              {todayAllBets.groups.map((group) => (
+                <Card key={group.typeId}>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">{group.typeName}</Badge>
+                        <span className="text-xs text-slate-400">
+                          {group.betCount} บิล · {group.itemCount} รายการ
+                        </span>
+                      </CardTitle>
+                      <span className="text-sm font-bold text-sky-600 tabular-nums">
+                        {formatCurrency(group.totalAmount)} บาท
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-sky-200 bg-sky-50">
+                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">เวลา</th>
+                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">คนซื้อ</th>
+                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">หวย</th>
+                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">เลข</th>
+                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">ประเภท</th>
+                            <th className="text-right px-3 py-2 text-xs text-slate-500 font-medium">ยอด</th>
+                            <th className="text-center px-3 py-2 text-xs text-slate-500 font-medium">สถานะ</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {group.bets.map((bet) => {
+                            const st = statusLabel[bet.status] ?? { label: bet.status, variant: 'default' as const }
+                            return bet.items.map((item, i) => (
+                              <tr key={`${bet.id}-${item.id}`} className={i === 0 ? 'border-t-2 border-sky-100' : ''}>
+                                <td className="px-3 py-1.5 text-xs text-slate-500">
+                                  {i === 0 ? formatTime(bet.created_at) : ''}
+                                </td>
+                                <td className="px-3 py-1.5 text-xs text-slate-600">
+                                  {i === 0 ? (bet.buyer_name ?? '—') : ''}
+                                </td>
+                                <td className="px-3 py-1.5">
+                                  {i === 0 && (
+                                    <Badge className="text-[10px] bg-sky-100 text-sky-700 border-sky-200 font-medium">
+                                      {group.typeName}
+                                    </Badge>
+                                  )}
+                                </td>
+                                <td className="px-3 py-1.5 font-mono text-xs font-semibold">{item.number}</td>
+                                <td className="px-3 py-1.5">
+                                  <Badge variant="secondary" className="text-[10px] font-normal">
+                                    {BET_TYPE_LABEL[item.bet_type as BetType] ?? item.bet_type}
+                                  </Badge>
+                                </td>
+                                <td className="px-3 py-1.5 text-right text-xs font-medium tabular-nums">
+                                  {formatCurrency(item.amount)}
+                                </td>
+                                <td className="px-3 py-1.5 text-center">
+                                  {i === 0 && (
+                                    <Badge variant={st.variant} className="text-[10px]">
+                                      {st.label}
+                                    </Badge>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {todayAllBets.groups.length === 0 && (
+                <p className="text-center text-sm text-slate-400 py-12">ไม่มีบิลในวันนี้</p>
+              )}
+
+              {todayAllBets.totalPages > 1 && (
+                <Pagination page={allPage} totalPages={todayAllBets.totalPages} onPageChange={setAllPage} />
+              )}
+            </>
+          ) : null}
+        </div>
+      )}
+
+      {/* Single Type View */}
+      {selectedTypeId && selectedTypeId !== '__all__' && (
         <div className="grid md:grid-cols-4 gap-4">
           {/* Round List */}
           <Card className="md:col-span-1">
@@ -198,7 +325,7 @@ export default function ReportsPage() {
                 )}
 
                 {/* Win/Loss Summary — shown only for resulted rounds */}
-                {selectedRound && selectedRound.status === 'resulted' && winLossSummary && (
+                {selectedRound && selectedRound.status === 'resulted' && roundSummary && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     <div className="rounded-lg border border-green-200 bg-green-50/50 p-4 shadow-sm">
                       <div className="flex items-center gap-2 mb-1">
@@ -206,7 +333,7 @@ export default function ReportsPage() {
                         <p className="text-xs text-green-600 font-medium">ถูก</p>
                       </div>
                       <p className="text-xl font-bold text-green-700 tabular-nums">
-                        {winLossSummary.wonCount} <span className="text-sm font-normal">บิล</span>
+                        {roundSummary.wonCount} <span className="text-sm font-normal">บิล</span>
                       </p>
                     </div>
                     <div className="rounded-lg border border-red-200 bg-red-50/50 p-4 shadow-sm">
@@ -215,7 +342,7 @@ export default function ReportsPage() {
                         <p className="text-xs text-red-600 font-medium">ไม่ถูก</p>
                       </div>
                       <p className="text-xl font-bold text-red-700 tabular-nums">
-                        {winLossSummary.lostCount} <span className="text-sm font-normal">บิล</span>
+                        {roundSummary.lostCount} <span className="text-sm font-normal">บิล</span>
                       </p>
                     </div>
                     <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
@@ -224,7 +351,7 @@ export default function ReportsPage() {
                         <p className="text-xs text-slate-400">ยอดจ่าย</p>
                       </div>
                       <p className="text-xl font-bold text-red-500 tabular-nums">
-                        {formatCurrency(winLossSummary.payout)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                        {formatCurrency(roundSummary.totalPayout)} <span className="text-sm font-normal text-slate-500">บาท</span>
                       </p>
                     </div>
                     <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
@@ -233,7 +360,7 @@ export default function ReportsPage() {
                         <p className="text-xs text-slate-400">กำไรงวดนี้</p>
                       </div>
                       <p className="text-xl font-bold text-sky-600 tabular-nums">
-                        {formatCurrency(winLossSummary.profit)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                        {formatCurrency(roundSummary.profit)} <span className="text-sm font-normal text-slate-500">บาท</span>
                       </p>
                     </div>
                   </div>
@@ -358,6 +485,21 @@ export default function ReportsPage() {
                                           </tbody>
                                         </table>
                                       </div>
+                                      {bet.status === 'pending' && (
+                                        <div className="px-8 py-2 border-t border-slate-100 flex justify-end">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setCancelTarget(bet.id)
+                                            }}
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs"
+                                          >
+                                            ยกเลิกบิลนี้
+                                          </Button>
+                                        </div>
+                                      )}
                                     </td>
                                   </tr>
                                 )}
@@ -368,30 +510,7 @@ export default function ReportsPage() {
                       </table>
                     </div>
 
-                    {/* Pagination */}
-                    {betsData.totalPages > 1 && (
-                      <div className="flex items-center justify-center gap-2 p-3 border-t border-slate-100">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={page === 1}
-                          onClick={() => setPage((p) => p - 1)}
-                        >
-                          ก่อนหน้า
-                        </Button>
-                        <span className="text-sm text-slate-600">
-                          {page} / {betsData.totalPages}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={page === betsData.totalPages}
-                          onClick={() => setPage((p) => p + 1)}
-                        >
-                          ถัดไป
-                        </Button>
-                      </div>
-                    )}
+                    <Pagination page={page} totalPages={betsData.totalPages} onPageChange={setPage} />
                   </CardContent>
                 </Card>
               </>
@@ -399,6 +518,19 @@ export default function ReportsPage() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={!!cancelTarget}
+        onOpenChange={(open) => { if (!open) setCancelTarget(null) }}
+        title="ยกเลิกบิล"
+        message="คุณแน่ใจหรือไม่ที่จะยกเลิกบิลนี้? การกระทำนี้ไม่สามารถย้อนกลับได้"
+        confirmLabel="ยกเลิกบิล"
+        onConfirm={() => {
+          if (cancelTarget) {
+            cancelBet.mutate(cancelTarget)
+            setCancelTarget(null)
+          }
+        }}
+      />
     </div>
   )
 }

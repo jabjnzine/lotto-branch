@@ -41,6 +41,24 @@ export class BetsController {
     return buffer
   }
 
+  @Post('calculate/:roundId')
+  calculateWinners(@Param('roundId') roundId: string) {
+    return this.service.calculateWinners(roundId)
+  }
+
+  @Get('round-summary/:roundId')
+  getRoundSummary(@Param('roundId') roundId: string) {
+    return this.service.getRoundSummary(roundId)
+  }
+
+  @Get('today-all')
+  getTodayAll(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.service.getTodayAll(page ? +page : 1, pageSize ? +pageSize : 20)
+  }
+
   @Get('today-summary')
   getTodaySummary() {
     return this.service.getTodaySummary()
