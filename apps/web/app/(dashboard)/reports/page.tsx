@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatThaiDate, formatCurrency, formatTime } from '@/lib/utils'
 import { BET_TYPE_LABEL, BetType } from '@lotto/shared'
-import { Download, ChevronDown, ChevronRight, User, FileText, BarChart2 } from 'lucide-react'
+import { Download, ChevronDown, ChevronRight, User, FileText, BarChart2, CheckCircle, XCircle, DollarSign, TrendingUp } from 'lucide-react'
 
 const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'destructive' | 'warning' | 'default' }> = {
   open: { label: 'เปิด', variant: 'success' },
@@ -67,6 +67,17 @@ export default function ReportsPage() {
     (sum: number, bet: { total_amount: string }) => sum + Number(bet.total_amount),
     0,
   ) ?? 0
+
+  const winLossSummary = useMemo(() => {
+    if (!betsData?.items) return null
+    const won = betsData.items.filter((b: { status: string }) => b.status === 'won')
+    const lost = betsData.items.filter((b: { status: string }) => b.status === 'lost')
+    const payout = won.reduce((sum: number, b: { items?: Array<{ win_amount?: string }> }) =>
+      sum + (b.items ?? []).reduce((s: number, i: { win_amount?: string }) =>
+        s + Number(i.win_amount ?? 0), 0),
+    0)
+    return { wonCount: won.length, lostCount: lost.length, payout, profit: totalAmount - payout }
+  }, [betsData?.items, totalAmount])
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -181,6 +192,48 @@ export default function ReportsPage() {
                       <p className="text-xs text-slate-400">ยอดรับรวม</p>
                       <p className="text-xl font-bold text-sky-600 tabular-nums mt-0.5">
                         {formatCurrency(totalAmount)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Win/Loss Summary — shown only for resulted rounds */}
+                {selectedRound && selectedRound.status === 'resulted' && winLossSummary && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <div className="rounded-lg border border-green-200 bg-green-50/50 p-4 shadow-sm">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <p className="text-xs text-green-600 font-medium">ถูก</p>
+                      </div>
+                      <p className="text-xl font-bold text-green-700 tabular-nums">
+                        {winLossSummary.wonCount} <span className="text-sm font-normal">บิล</span>
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-red-200 bg-red-50/50 p-4 shadow-sm">
+                      <div className="flex items-center gap-2 mb-1">
+                        <XCircle className="h-4 w-4 text-red-500" />
+                        <p className="text-xs text-red-600 font-medium">ไม่ถูก</p>
+                      </div>
+                      <p className="text-xl font-bold text-red-700 tabular-nums">
+                        {winLossSummary.lostCount} <span className="text-sm font-normal">บิล</span>
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                      <div className="flex items-center gap-2 mb-1">
+                        <DollarSign className="h-4 w-4 text-red-500" />
+                        <p className="text-xs text-slate-400">ยอดจ่าย</p>
+                      </div>
+                      <p className="text-xl font-bold text-red-500 tabular-nums">
+                        {formatCurrency(winLossSummary.payout)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                      <div className="flex items-center gap-2 mb-1">
+                        <TrendingUp className="h-4 w-4 text-sky-600" />
+                        <p className="text-xs text-slate-400">กำไรงวดนี้</p>
+                      </div>
+                      <p className="text-xl font-bold text-sky-600 tabular-nums">
+                        {formatCurrency(winLossSummary.profit)} <span className="text-sm font-normal text-slate-500">บาท</span>
                       </p>
                     </div>
                   </div>

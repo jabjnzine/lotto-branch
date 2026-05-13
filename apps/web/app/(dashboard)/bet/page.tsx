@@ -29,6 +29,7 @@ import {
   groupBetTypesForUi,
 } from '@lotto/shared'
 import { cn, dayjs, formatCurrency, formatThaiDate } from '@/lib/utils'
+import { downloadHtmlAsXls } from '@/lib/export-utils'
 import {
   CalendarDays,
   FileSpreadsheet,
@@ -255,6 +256,33 @@ export default function BetPage() {
     selectedTypeId,
   ])
 
+  const handleExportDraft = useCallback(() => {
+    if (draftItems.length === 0) return
+    const rows = draftItems.map((item, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td style="font-weight:bold">${item.number}</td>
+        <td>${BET_TYPE_LABEL[item.bet_type] ?? item.bet_type}</td>
+        <td style="text-align:right">${item.amount.toLocaleString()}</td>
+      </tr>`).join('')
+
+    const total = draftItems.reduce((sum, item) => sum + item.amount, 0)
+    const table = `
+      <h3>${draftBillNo}</h3>
+      <p>งวด: ${drawDateLabel} | ${selectedType?.name ?? ''} | ลูกค้า: ${buyerName || 'ทั่วไป'}</p>
+      <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;max-width:400px">
+        <thead><tr style="background:#0284c7;color:white">
+          <th>#</th><th>เลข</th><th>ประเภท</th><th>ยอด (บาท)</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr style="font-weight:bold;background:#f0f9ff">
+          <td colspan="3" style="text-align:right">รวมทั้งสิ้น</td>
+          <td style="text-align:right">${total.toLocaleString()}</td>
+        </tr></tfoot>
+      </table>`
+    downloadHtmlAsXls(draftBillNo, table)
+  }, [draftItems, draftBillNo, drawDateLabel, selectedType?.name, buyerName])
+
   const handleClearForm = useCallback(() => {
     clearItems()
     setBuyerName('')
@@ -289,11 +317,12 @@ export default function BetPage() {
       }
       if (e.key === 'F5') {
         e.preventDefault()
+        handleExportDraft()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleClearForm, handleSubmit, receiptDialog.show, draftItems.length, isClosed, selectedTypeId])
+  }, [handleClearForm, handleSubmit, handleExportDraft, receiptDialog.show, draftItems.length, isClosed, selectedTypeId])
 
   if (typesLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
@@ -727,13 +756,14 @@ export default function BetPage() {
             <Button
               type="button"
               variant="secondary"
-              className="h-12 flex-1 min-w-[140px] gap-2 border border-slate-300 bg-white text-slate-400 shadow-sm"
-              disabled
-              title="เร็วๆ นี้"
+              className="h-12 flex-1 min-w-[140px] gap-2 border border-slate-300 bg-white shadow-sm hover:bg-slate-50"
+              onClick={handleExportDraft}
+              disabled={draftItems.length === 0}
+              title={draftItems.length === 0 ? 'กรุณาเพิ่มรายการ' : 'ส่งออกเป็น Excel (F5)'}
             >
-              <FileSpreadsheet className="h-4 w-4" />
-              <span>ส่งออก Excel</span>
-              <kbd className="ml-1 hidden rounded border border-slate-200 px-1.5 py-0.5 font-mono text-[10px] sm:inline">
+              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+              <span className="font-medium">ส่งออก Excel</span>
+              <kbd className="ml-1 hidden rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] sm:inline">
                 F5
               </kbd>
             </Button>
