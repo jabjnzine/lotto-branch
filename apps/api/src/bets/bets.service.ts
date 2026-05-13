@@ -30,14 +30,25 @@ export class BetsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async findAll(roundId: string, page = 1, pageSize = 20) {
-    const [items, total] = await this.betsRepo.findAndCount({
-      where: { round_id: roundId },
-      relations: ['items', 'user'],
-      order: { created_at: 'DESC' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    })
+  async findAll(roundId: string, page = 1, pageSize = 20, search?: string) {
+    const qb = this.betsRepo
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.items', 'bi')
+      .leftJoinAndSelect('b.user', 'u')
+      .where('b.round_id = :roundId', { roundId })
+
+    if (search && search.trim()) {
+      qb.andWhere('(b.buyer_name ILIKE :search OR bi.number LIKE :search)', {
+        search: `%${search.trim()}%`,
+      })
+    }
+
+    const [items, total] = await qb
+      .orderBy('b.created_at', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount()
+
     return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) }
   }
 
@@ -296,7 +307,7 @@ export class BetsService {
     }
   }
 
-  async getTodayAll(page = 1, pageSize = 20) {
+  async getTodayAll(page = 1, pageSize = 20, search?: string) {
     const today = new Date().toISOString().slice(0, 10)
 
     const qb = this.betsRepo
@@ -306,6 +317,12 @@ export class BetsService {
       .innerJoinAndSelect('r.lottery_type', 'lt')
       .where('r.draw_date = :today', { today })
       .andWhere('b.status != :cancelled', { cancelled: BetStatus.CANCELLED })
+
+    if (search && search.trim()) {
+      qb.andWhere('(b.buyer_name ILIKE :search OR bi.number LIKE :search)', {
+        search: `%${search.trim()}%`,
+      })
+    }
 
     const total = await qb.getCount()
 

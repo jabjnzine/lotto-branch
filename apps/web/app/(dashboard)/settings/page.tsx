@@ -152,7 +152,7 @@ export default function SettingsPage() {
               <CardTitle className="text-base">อัตราจ่าย — {selectedType?.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {allowedBetTypes.map((betType) => {
                   const rate = prizeRates?.find(
                     (pr: { bet_type: string }) => pr.bet_type === betType,

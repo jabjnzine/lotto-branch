@@ -6,6 +6,7 @@ import { useRounds, type LotteryRound } from '@/lib/hooks/useRounds'
 import { useBets, useExportBets, useCancelBet, useRoundSummary, useTodayAllBets } from '@/lib/hooks/useBets'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Pagination } from '@/components/shared/Pagination'
+import { SearchInput } from '@/components/shared/SearchInput'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -35,14 +36,21 @@ export default function ReportsPage() {
   const [page, setPage] = useState(1)
   const [allPage, setAllPage] = useState(1)
   const [expandedBetId, setExpandedBetId] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const { data: lotteryTypes, isLoading } = useLotteryTypes()
   const { data: rounds } = useRounds(selectedTypeId && selectedTypeId !== '__all__' ? selectedTypeId : undefined)
-  const { data: betsData, isLoading: betsLoading } = useBets(selectedRoundId, page, 20)
+  const { data: betsData, isLoading: betsLoading } = useBets(selectedRoundId, page, 20, debouncedSearch || undefined)
   const exportBets = useExportBets()
   const cancelBet = useCancelBet()
   const [cancelTarget, setCancelTarget] = useState<string | null>(null)
-  const { data: todayAllBets, isLoading: todayAllLoading } = useTodayAllBets(allPage, 20)
+  const { data: todayAllBets, isLoading: todayAllLoading } = useTodayAllBets(allPage, 20, debouncedSearch || undefined)
 
   useEffect(() => {
     if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
@@ -69,6 +77,12 @@ export default function ReportsPage() {
       return new Date(b.draw_date).getTime() - new Date(a.draw_date).getTime()
     })
   }, [rounds])
+
+  const handleSearch = (val: string) => {
+    setSearch(val)
+    setPage(1)
+    setAllPage(1)
+  }
 
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
@@ -156,6 +170,12 @@ export default function ReportsPage() {
                 </div>
               </div>
 
+              <SearchInput
+                value={search}
+                onChange={handleSearch}
+                placeholder="ค้นหาเลขหรือชื่อคนซื้อ..."
+              />
+
               {/* Groups by Lottery Type */}
               {todayAllBets.groups.map((group) => (
                 <Card key={group.typeId}>
@@ -178,8 +198,8 @@ export default function ReportsPage() {
                         <thead>
                           <tr className="border-b border-sky-200 bg-sky-50">
                             <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">เวลา</th>
-                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">คนซื้อ</th>
-                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">หวย</th>
+                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium hidden sm:table-cell">คนซื้อ</th>
+                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium hidden sm:table-cell">หวย</th>
                             <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">เลข</th>
                             <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">ประเภท</th>
                             <th className="text-right px-3 py-2 text-xs text-slate-500 font-medium">ยอด</th>
@@ -194,10 +214,10 @@ export default function ReportsPage() {
                                 <td className="px-3 py-1.5 text-xs text-slate-500">
                                   {i === 0 ? formatTime(bet.created_at) : ''}
                                 </td>
-                                <td className="px-3 py-1.5 text-xs text-slate-600">
+                                <td className="px-3 py-1.5 text-xs text-slate-600 hidden sm:table-cell">
                                   {i === 0 ? (bet.buyer_name ?? '—') : ''}
                                 </td>
-                                <td className="px-3 py-1.5">
+                                <td className="px-3 py-1.5 hidden sm:table-cell">
                                   {i === 0 && (
                                     <Badge className="text-[10px] bg-sky-100 text-sky-700 border-sky-200 font-medium">
                                       {group.typeName}
@@ -365,6 +385,14 @@ export default function ReportsPage() {
                     </div>
                   </div>
                 )}
+
+                <div className="mb-4">
+                  <SearchInput
+                    value={search}
+                    onChange={handleSearch}
+                    placeholder="ค้นหาเลขหรือชื่อคนซื้อ..."
+                  />
+                </div>
 
                 <Card>
                   <CardHeader className="pb-2">

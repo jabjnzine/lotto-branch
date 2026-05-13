@@ -173,7 +173,7 @@ export default function RestrictionsPage() {
                 <p className="mb-2 text-xs font-medium text-slate-600">ประเภทการแทง</p>
                 {betTypeGroups.length > 0 && (
                   <div className="mb-3 rounded-xl border border-sky-200 bg-white p-3 shadow-sm">
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {betTypeGroups.map((group) => {
                         const tabOn = resolvedTabGroupId === group.groupId
                         return (
@@ -245,7 +245,7 @@ export default function RestrictionsPage() {
                 )}
 
                 <p className="mb-2 text-xs font-medium text-slate-600">ประเภทการอั้น</p>
-                <div className="flex gap-2 mb-3">
+                <div className="flex flex-wrap gap-2 mb-3">
                   {[RestrictionType.CLOSED, RestrictionType.LIMITED, RestrictionType.HALF_PAY].map((rt) => (
                     <button
                       key={rt}

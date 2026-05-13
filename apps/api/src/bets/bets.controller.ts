@@ -26,8 +26,9 @@ export class BetsController {
     @Query('roundId') roundId: string,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
+    @Query('search') search?: string,
   ) {
-    return this.service.findAll(roundId, page ? +page : 1, pageSize ? +pageSize : 20)
+    return this.service.findAll(roundId, page ? +page : 1, pageSize ? +pageSize : 20, search)
   }
 
   @Get('export')
@@ -55,8 +56,9 @@ export class BetsController {
   getTodayAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
+    @Query('search') search?: string,
   ) {
-    return this.service.getTodayAll(page ? +page : 1, pageSize ? +pageSize : 20)
+    return this.service.getTodayAll(page ? +page : 1, pageSize ? +pageSize : 20, search)
   }
 
   @Get('today-summary')

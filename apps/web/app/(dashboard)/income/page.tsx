@@ -218,7 +218,7 @@ export default function IncomePage() {
                       <Target className="h-4 w-4" />
                       แยกตามประเภทการแทง
                     </div>
-                    <div className="grid grid-cols-2 gap-3 p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
                       {summary.byBetType.map((bt: { betType: string; received: string; payout: string }) => {
                         const btProfit = parseFloat(bt.received) - parseFloat(bt.payout)
                         return (

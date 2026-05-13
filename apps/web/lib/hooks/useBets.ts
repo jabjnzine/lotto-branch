@@ -53,10 +53,13 @@ export interface TodayAllBets {
   }>
 }
 
-export function useTodayAllBets(page = 1, pageSize = 20) {
+export function useTodayAllBets(page = 1, pageSize = 20, search?: string) {
   return useQuery<TodayAllBets>({
-    queryKey: ['bets', 'today-all', page, pageSize],
-    queryFn: () => api.get(`/bets/today-all?page=${page}&pageSize=${pageSize}`).then((r) => r.data),
+    queryKey: ['bets', 'today-all', page, pageSize, search],
+    queryFn: () => {
+      const searchParam = search ? `&search=${encodeURIComponent(search)}` : ''
+      return api.get(`/bets/today-all?page=${page}&pageSize=${pageSize}${searchParam}`).then((r) => r.data)
+    },
   })
 }
 
@@ -67,13 +70,15 @@ export function useTodayBetsSummary() {
   })
 }
 
-export function useBets(roundId: string | null, page = 1, pageSize = 20) {
+export function useBets(roundId: string | null, page = 1, pageSize = 20, search?: string) {
   return useQuery({
-    queryKey: ['bets', roundId, page, pageSize],
-    queryFn: () =>
-      api
-        .get(`/bets?roundId=${roundId}&page=${page}&pageSize=${pageSize}`)
-        .then((r) => r.data),
+    queryKey: ['bets', roundId, page, pageSize, search],
+    queryFn: () => {
+      const searchParam = search ? `&search=${encodeURIComponent(search)}` : ''
+      return api
+        .get(`/bets?roundId=${roundId}&page=${page}&pageSize=${pageSize}${searchParam}`)
+        .then((r) => r.data)
+    },
     enabled: !!roundId,
   })
 }
