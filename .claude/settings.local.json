@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --filter @lotto/api build)",
+      "Bash(pnpm --filter @lotto/api typecheck)"
+    ]
+  }
+}
