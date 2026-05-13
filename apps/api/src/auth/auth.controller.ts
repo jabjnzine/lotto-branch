@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { IsEmail, IsString, MinLength } from 'class-validator'
 import { Request, Response } from 'express'
@@ -35,7 +36,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const user = await this.authService.validateUser(dto.email, dto.password)
-    const { accessToken, refreshToken, user: profile } = await this.authService.login(user)
+    const { accessToken, refreshToken } = await this.authService.login(user)
 
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
@@ -45,7 +46,7 @@ export class AuthController {
       path: '/auth',
     })
 
-    return { accessToken, user: profile }
+    return { accessToken }
   }
 
   @Post('refresh')
@@ -53,7 +54,7 @@ export class AuthController {
   async refresh(@Req() req: Request) {
     const token = req.cookies['refresh_token'] as string
     if (!token) {
-      return { statusCode: 401, message: 'ไม่มี refresh token' }
+      throw new UnauthorizedException('ไม่มี refresh token')
     }
     const { accessToken, user } = await this.authService.refresh(token)
     return { accessToken, user }

@@ -23,7 +23,10 @@ export default function BetPage() {
   const [selectedBetType, setSelectedBetType] = useState<BetType>(BetType.THREE_TOP)
   const [number, setNumber] = useState('')
   const [amount, setAmount] = useState('')
+  const [buyerName, setBuyerName] = useState('')
   const [note, setNote] = useState('')
+  const [isTopBottom, setIsTopBottom] = useState(false)
+  const [isReverse, setIsReverse] = useState(false)
 
   const { data: lotteryTypes, isLoading: typesLoading } = useLotteryTypes()
   const { data: currentRound } = useCurrentRound(selectedTypeId)
@@ -35,14 +38,29 @@ export default function BetPage() {
 
   const maxLength = BET_TYPE_DIGIT_COUNT[selectedBetType] ?? 2
 
+  const is2Digit = maxLength === 2
+
   const handleAddItem = () => {
     if (!number || !amount || number.length !== maxLength) return
-    addItem({
-      id: nanoid(),
-      number,
-      bet_type: selectedBetType,
-      amount: parseFloat(amount),
-    })
+    const numAmount = parseFloat(amount)
+
+    const reverseNum = is2Digit ? number[1] + number[0] : null
+    const useReverse = isReverse && is2Digit && reverseNum !== number
+
+    if (isTopBottom && is2Digit) {
+      addItem({ id: nanoid(), number, bet_type: BetType.TWO_TOP, amount: numAmount })
+      addItem({ id: nanoid(), number, bet_type: BetType.TWO_BOTTOM, amount: numAmount })
+      if (useReverse) {
+        addItem({ id: nanoid(), number: reverseNum!, bet_type: BetType.TWO_TOP, amount: numAmount })
+        addItem({ id: nanoid(), number: reverseNum!, bet_type: BetType.TWO_BOTTOM, amount: numAmount })
+      }
+    } else {
+      addItem({ id: nanoid(), number, bet_type: selectedBetType, amount: numAmount })
+      if (useReverse) {
+        addItem({ id: nanoid(), number: reverseNum!, bet_type: selectedBetType, amount: numAmount })
+      }
+    }
+
     setNumber('')
   }
 
@@ -52,6 +70,7 @@ export default function BetPage() {
     await createBet.mutateAsync({
       round_id: currentRound.id,
       lottery_type_id: selectedTypeId,
+      buyer_name: buyerName || undefined,
       note: note || undefined,
       items: draftItems.map((item) => ({
         number: item.number,
@@ -61,6 +80,7 @@ export default function BetPage() {
     })
 
     clearItems()
+    setBuyerName('')
     setNote('')
   }
 
@@ -70,7 +90,7 @@ export default function BetPage() {
   const isClosed = !currentRound
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader title="คีย์หวย" />
 
       {/* Lottery Type Selector */}
@@ -83,6 +103,8 @@ export default function BetPage() {
               const types = LOTTERY_TYPE_BET_TYPES[lt.code] ?? []
               setSelectedBetType(types[0] ?? BetType.TWO_BOTTOM)
               clearItems()
+              setIsTopBottom(false)
+              setIsReverse(false)
             }}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedTypeId === lt.id
@@ -123,6 +145,10 @@ export default function BetPage() {
                 onClick={() => {
                   setSelectedBetType(bt)
                   setNumber('')
+                  if (BET_TYPE_DIGIT_COUNT[bt] !== 2) {
+                    setIsTopBottom(false)
+                    setIsReverse(false)
+                  }
                 }}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   selectedBetType === bt
@@ -134,6 +160,28 @@ export default function BetPage() {
               </button>
             ))}
           </div>
+
+          {/* 2-Digit Features */}
+          {is2Digit && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsTopBottom(!isTopBottom)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  isTopBottom ? 'bg-green-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                บน+ล่าง {isTopBottom && '✓'}
+              </button>
+              <button
+                onClick={() => setIsReverse(!isReverse)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  isReverse ? 'bg-amber-500 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                เลขกลับ {isReverse && '✓'}
+              </button>
+            </div>
+          )}
 
           {/* Input Row */}
           <Card>
@@ -214,6 +262,12 @@ export default function BetPage() {
                 {/* Summary */}
                 <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 space-y-3">
                   <div className="flex items-center gap-2">
+                    <input
+                      value={buyerName}
+                      onChange={(e) => setBuyerName(e.target.value)}
+                      placeholder="ชื่อคนซื้อ"
+                      className="flex-1 h-9 border border-slate-200 rounded-md px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                     <input
                       value={note}
                       onChange={(e) => setNote(e.target.value)}

@@ -25,7 +25,7 @@ export default function ReportsPage() {
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader title="รายงาน">
         {selectedRoundId && (
           <Button variant="outline" size="sm">

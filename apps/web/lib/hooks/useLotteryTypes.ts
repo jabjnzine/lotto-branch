@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../api'
 
 export interface LotteryType {
@@ -13,10 +13,13 @@ export interface LotteryType {
   is_active: boolean
 }
 
-export function useLotteryTypes() {
+export function useLotteryTypes(includeInactive = false) {
   return useQuery<LotteryType[]>({
-    queryKey: ['lottery-types'],
-    queryFn: () => api.get('/lottery-types').then((r) => r.data),
+    queryKey: ['lottery-types', { all: includeInactive }],
+    queryFn: () =>
+      api
+        .get('/lottery-types', { params: includeInactive ? { all: 'true' } : undefined })
+        .then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -28,5 +31,27 @@ export function usePrizeRates(lotteryTypeId: string | null) {
       api.get(`/lottery-types/${lotteryTypeId}/prize-rates`).then((r) => r.data),
     enabled: !!lotteryTypeId,
     staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useUpdateLotteryType() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...dto }: { id: string } & Partial<LotteryType>) =>
+      api.patch(`/lottery-types/${id}`, dto).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['lottery-types'] })
+    },
+  })
+}
+
+export function useUpdatePrizeRate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...dto }: { id: string; payout_rate?: number; max_per_number?: number | null }) =>
+      api.patch(`/prize-rates/${id}`, dto).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['prize-rates'] })
+    },
   })
 }

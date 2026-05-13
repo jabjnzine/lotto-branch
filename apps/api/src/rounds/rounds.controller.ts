@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { RoundsService } from './rounds.service'
+import { RoundsSchedulerService } from './rounds-scheduler.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { LotteryRound } from '../entities/lottery-round.entity'
 import { LotteryResult } from '../entities/lottery-result.entity'
@@ -17,7 +18,10 @@ import { RoundStatus } from '@lotto/shared'
 @Controller('rounds')
 @UseGuards(JwtAuthGuard)
 export class RoundsController {
-  constructor(private readonly service: RoundsService) {}
+  constructor(
+    private readonly service: RoundsService,
+    private readonly scheduler: RoundsSchedulerService,
+  ) {}
 
   @Get()
   findAll(
@@ -35,6 +39,11 @@ export class RoundsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id)
+  }
+
+  @Post('generate')
+  generateRounds() {
+    return this.scheduler.generateUpcomingRounds()
   }
 
   @Post()

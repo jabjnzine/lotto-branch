@@ -6,7 +6,7 @@ import { Home } from 'lucide-react'
 
 export default function HousesPage() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader title="บ้าน" description="จัดการบ้าน/Agent" />
       <Card>
         <CardContent className="py-16 text-center">

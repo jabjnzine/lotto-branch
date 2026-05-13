@@ -33,6 +33,9 @@ export class Bet {
   user_id: string
 
   @Column({ type: 'varchar', nullable: true })
+  buyer_name: string | null
+
+  @Column({ type: 'varchar', nullable: true })
   note: string | null
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })

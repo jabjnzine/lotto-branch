@@ -30,6 +30,7 @@ export class RoundsService {
     return this.roundsRepo.findOne({
       where: { lottery_type_id: lotteryTypeId, status: RoundStatus.OPEN },
       relations: ['lottery_type'],
+      order: { draw_date: 'ASC' },
     })
   }
 

@@ -10,6 +10,7 @@ interface AuthUser {
 interface AuthStore {
   accessToken: string | null
   user: AuthUser | null
+  setToken: (token: string) => void
   setAuth: (token: string, user: AuthUser) => void
   clearAuth: () => void
 }
@@ -17,6 +18,7 @@ interface AuthStore {
 export const useAuthStore = create<AuthStore>((set) => ({
   accessToken: null,
   user: null,
+  setToken: (accessToken) => set({ accessToken }),
   setAuth: (accessToken, user) => set({ accessToken, user }),
   clearAuth: () => set({ accessToken: null, user: null }),
 }))

@@ -19,6 +19,7 @@ export interface CreateBetItemDto {
 export interface CreateBetDto {
   round_id: string
   lottery_type_id: string
+  buyer_name?: string
   note?: string
   items: CreateBetItemDto[]
 }

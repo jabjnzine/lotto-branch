@@ -121,7 +121,8 @@ export class BetsService {
         round_id: dto.round_id,
         lottery_type_id: dto.lottery_type_id,
         user_id: userId,
-        note: dto.note,
+        buyer_name: dto.buyer_name ?? null,
+        note: dto.note ?? null,
         total_amount: totalAmount.toFixed(2),
         status: BetStatus.PENDING,
       })

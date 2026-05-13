@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common'
+import { Controller, Get, Patch, Param, Body, Query, UseGuards } from '@nestjs/common'
 import { LotteryTypesService } from './lottery-types.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { LotteryType } from '../entities/lottery-type.entity'
@@ -10,8 +10,8 @@ export class LotteryTypesController {
   constructor(private readonly service: LotteryTypesService) {}
 
   @Get()
-  findAll() {
-    return this.service.findAll()
+  findAll(@Query('all') all?: string) {
+    return this.service.findAll(all === 'true')
   }
 
   @Get(':id')

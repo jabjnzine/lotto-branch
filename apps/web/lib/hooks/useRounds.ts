@@ -45,3 +45,14 @@ export function useCancelRound() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['rounds'] }),
   })
 }
+
+export function useGenerateRounds() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post('/rounds/generate').then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['rounds'] })
+      qc.invalidateQueries({ queryKey: ['round'] })
+    },
+  })
+}

@@ -34,7 +34,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader
         title={`สวัสดี, ${user?.name ?? 'Admin'}`}
         description="ภาพรวมระบบหวยวันนี้"

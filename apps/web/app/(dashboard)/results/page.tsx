@@ -105,7 +105,7 @@ export default function ResultsPage() {
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader title="ผลหวย" />
 
       {/* Type Selector */}

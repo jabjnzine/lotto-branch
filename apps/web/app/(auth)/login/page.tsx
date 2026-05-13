@@ -5,7 +5,7 @@ import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
-import api from '@/lib/api'
+import { useLogin } from '@/lib/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormInput } from '@/components/form/FormInput'
@@ -20,6 +20,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const router = useRouter()
   const setAuth = useAuthStore((s) => s.setAuth)
+  const loginMutation = useLogin()
 
   const methods = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -34,8 +35,8 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const { data } = await api.post('/auth/login', values)
-      setAuth(data.accessToken, data.user)
+      const { accessToken, profile } = await loginMutation.mutateAsync(values)
+      setAuth(accessToken, profile)
       router.push('/dashboard')
     } catch (err: unknown) {
       const message =

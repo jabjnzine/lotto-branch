@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -15,13 +15,18 @@ dayjs.extend(timezone)
 dayjs.extend(customParseFormat)
 
 @Injectable()
-export class RoundsSchedulerService {
+export class RoundsSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(RoundsSchedulerService.name)
 
   constructor(
     @InjectRepository(LotteryType) private readonly lotteryTypesRepo: Repository<LotteryType>,
     @InjectRepository(LotteryRound) private readonly roundsRepo: Repository<LotteryRound>,
   ) {}
+
+  async onModuleInit() {
+    this.logger.log('สร้างงวดเริ่มต้น...')
+    await this.generateUpcomingRounds()
+  }
 
   @Cron('0 0 * * *', { timeZone: 'Asia/Bangkok' })
   async generateUpcomingRounds() {

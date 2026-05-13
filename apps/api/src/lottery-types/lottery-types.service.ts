@@ -11,8 +11,11 @@ export class LotteryTypesService {
     @InjectRepository(PrizeRate) private readonly prizeRatesRepo: Repository<PrizeRate>,
   ) {}
 
-  findAll() {
-    return this.lotteryTypesRepo.find({ where: { is_active: true }, order: { name: 'ASC' } })
+  findAll(includeInactive = false) {
+    return this.lotteryTypesRepo.find({
+      where: includeInactive ? {} : { is_active: true },
+      order: { name: 'ASC' },
+    })
   }
 
   async findOne(id: string) {

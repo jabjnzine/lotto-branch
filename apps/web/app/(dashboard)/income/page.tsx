@@ -23,7 +23,7 @@ export default function IncomePage() {
   const profit = summary ? parseFloat(summary.profit) : 0
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader title="รายได้" description="สรุปรายได้แยกตามงวด" />
 
       <div className="flex gap-4">
