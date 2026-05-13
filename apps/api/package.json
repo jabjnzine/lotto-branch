@@ -10,7 +10,9 @@
     "typeorm": "ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource src/data-source.ts",
     "migration:run": "pnpm typeorm migration:run",
     "migration:revert": "pnpm typeorm migration:revert",
-    "migration:generate": "pnpm typeorm migration:generate"
+    "migration:generate": "pnpm typeorm migration:generate",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@lotto/shared": "workspace:*",
@@ -51,6 +53,7 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.6"
   }
 }
