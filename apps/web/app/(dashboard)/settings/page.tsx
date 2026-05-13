@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { BET_TYPE_LABEL, LOTTERY_TYPE_BET_TYPES, BetType } from '@lotto/shared'
-import { Clock, Timer, Power, RefreshCw } from 'lucide-react'
+import { Clock, Timer, Power, RefreshCw, Settings } from 'lucide-react'
 
 export default function SettingsPage() {
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null)
@@ -18,6 +18,12 @@ export default function SettingsPage() {
   const updateLotteryType = useUpdateLotteryType()
   const updatePrizeRate = useUpdatePrizeRate()
   const generateRounds = useGenerateRounds()
+
+  useEffect(() => {
+    if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
+      setSelectedTypeId(lotteryTypes[0].id)
+    }
+  }, [selectedTypeId, lotteryTypes])
 
   const selectedType = lotteryTypes?.find((lt) => lt.id === selectedTypeId)
 
@@ -186,6 +192,7 @@ export default function SettingsPage() {
       {!selectedTypeId && (
         <Card>
           <CardContent className="py-12 text-center text-slate-400">
+            <Settings className="h-10 w-10 mx-auto mb-3 text-slate-300" />
             เลือกประเภทหวยเพื่อดูการตั้งค่า
           </CardContent>
         </Card>

@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
 import { useRounds, type LotteryRound } from '@/lib/hooks/useRounds'
-import { useBets } from '@/lib/hooks/useBets'
+import { useBets, useExportBets } from '@/lib/hooks/useBets'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatThaiDate, formatCurrency, formatTime } from '@/lib/utils'
 import { BET_TYPE_LABEL, BetType } from '@lotto/shared'
-import { Download, ChevronDown, ChevronRight, User, FileText } from 'lucide-react'
+import { Download, ChevronDown, ChevronRight, User, FileText, BarChart2 } from 'lucide-react'
 
 const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'destructive' | 'warning' | 'default' }> = {
   open: { label: 'เปิด', variant: 'success' },
@@ -36,6 +36,13 @@ export default function ReportsPage() {
   const { data: lotteryTypes, isLoading } = useLotteryTypes()
   const { data: rounds } = useRounds(selectedTypeId ?? undefined)
   const { data: betsData, isLoading: betsLoading } = useBets(selectedRoundId, page, 20)
+  const exportBets = useExportBets()
+
+  useEffect(() => {
+    if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
+      setSelectedTypeId(lotteryTypes[0].id)
+    }
+  }, [selectedTypeId, lotteryTypes])
 
   const selectedRound = rounds?.find((r) => r.id === selectedRoundId)
 
@@ -65,9 +72,14 @@ export default function ReportsPage() {
     <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader title="รายงาน">
         {selectedRoundId && (
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exportBets.isPending}
+            onClick={() => exportBets.mutate(selectedRoundId)}
+          >
             <Download className="h-4 w-4 mr-1" />
-            Export Excel
+            {exportBets.isPending ? 'กำลังส่งออก...' : 'Export Excel'}
           </Button>
         )}
       </PageHeader>
@@ -128,7 +140,10 @@ export default function ReportsPage() {
                 )
               })}
               {(!rounds || rounds.length === 0) && (
-                <p className="text-center text-xs text-slate-400 py-8">ไม่มีงวด</p>
+                <p className="text-center text-xs text-slate-400 py-8">
+                  <FileText className="h-5 w-5 mx-auto mb-1 text-slate-300" />
+                  ไม่มีงวด
+                </p>
               )}
             </CardContent>
           </Card>
@@ -136,7 +151,8 @@ export default function ReportsPage() {
           {/* Bets Table */}
           <div className="md:col-span-3">
             {!selectedRoundId && !betsLoading && (
-              <div className="flex items-center justify-center h-48 text-slate-400 text-sm bg-white rounded-lg border border-slate-200">
+              <div className="flex flex-col items-center justify-center h-48 text-slate-400 text-sm bg-white rounded-lg border border-slate-200">
+                <BarChart2 className="h-8 w-8 mb-2 text-slate-300" />
                 เลือกงวดเพื่อดูรายงาน
               </div>
             )}

@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Countdown } from '@/components/shared/Countdown'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { StatCardGridSkeleton } from '@/components/shared/StatCardSkeleton'
 import { formatCurrency, formatThaiDate } from '@/lib/utils'
-import { Trophy, Ticket, Ban, TrendingUp, FileText, DollarSign, TrendingDown } from 'lucide-react'
+import { Trophy, Ban, TrendingUp, PenLine, FileText, DollarSign, TrendingDown } from 'lucide-react'
 import Link from 'next/link'
 
 const statusLabel: Record<string, { label: string; variant: 'success' | 'destructive' | 'default' | 'warning' }> = {
@@ -23,16 +24,16 @@ const statusLabel: Record<string, { label: string; variant: 'success' | 'destruc
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
   const { data: todayRounds, isLoading } = useTodayRounds()
-  const { data: todaySummary } = useTodayBetsSummary()
-  const { data: todayIncome } = useTodayIncome()
+  const { data: todaySummary, isLoading: summaryLoading } = useTodayBetsSummary()
+  const { data: todayIncome, isLoading: incomeLoading } = useTodayIncome()
 
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
   const quickLinks = [
-    { href: '/bet', label: 'คีย์หวย', icon: Ticket, color: 'bg-sky-500', desc: 'บันทึกการแทง' },
-    { href: '/restrictions', label: 'เลขอั้น', icon: Ban, color: 'bg-red-500', desc: 'จัดการเลขอั้น' },
-    { href: '/results', label: 'ผลหวย', icon: Trophy, color: 'bg-amber-500', desc: 'บันทึกผล' },
-    { href: '/income', label: 'รายได้', icon: TrendingUp, color: 'bg-green-500', desc: 'ดูยอดรายได้' },
+    { href: '/bet', label: 'คีย์หวย', icon: PenLine, desc: 'บันทึกการแทง' },
+    { href: '/restrictions', label: 'เลขอั้น', icon: Ban, desc: 'จัดการเลขอั้น' },
+    { href: '/results', label: 'ผลหวย', icon: Trophy, desc: 'บันทึกผล' },
+    { href: '/income', label: 'รายได้', icon: TrendingUp, desc: 'ดูยอดรายได้' },
   ]
 
   const today = new Date().toISOString().slice(0, 10)
@@ -46,15 +47,17 @@ export default function DashboardPage() {
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {quickLinks.map(({ href, label, icon: Icon, color, desc }) => (
+        {quickLinks.map(({ href, label, icon: Icon, desc }) => (
           <Link key={href} href={href}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className={`${color} p-3 rounded-xl`}>
-                  <Icon className="h-6 w-6 text-white" />
+            <Card className="hover:shadow-md hover:border-sky-300 transition-all cursor-pointer h-full border-sky-100">
+              <CardContent className="p-5 flex flex-col items-center text-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 ring-1 ring-sky-100">
+                  <Icon className="h-6 w-6 text-sky-600" strokeWidth={1.5} />
                 </div>
-                <p className="font-semibold text-slate-900 text-sm">{label}</p>
-                <p className="text-xs text-slate-400">{desc}</p>
+                <div>
+                  <p className="font-semibold text-slate-800 text-sm">{label}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+                </div>
               </CardContent>
             </Card>
           </Link>
@@ -62,7 +65,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Today's Summary */}
-      {(todaySummary || todayIncome) && (
+      {(summaryLoading || incomeLoading) ? (
+        <StatCardGridSkeleton />
+      ) : (todaySummary || todayIncome) ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
@@ -117,7 +122,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Today's Rounds */}
       <Card>

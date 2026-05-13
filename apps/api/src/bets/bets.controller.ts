@@ -6,8 +6,11 @@ import {
   Param,
   Body,
   Query,
+  Res,
   UseGuards,
+  Header,
 } from '@nestjs/common'
+import type { Response } from 'express'
 import { BetsService } from './bets.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
@@ -25,6 +28,17 @@ export class BetsController {
     @Query('pageSize') pageSize?: string,
   ) {
     return this.service.findAll(roundId, page ? +page : 1, pageSize ? +pageSize : 20)
+  }
+
+  @Get('export')
+  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  async export(
+    @Query('roundId') roundId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { buffer, filename } = await this.service.exportRound(roundId)
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`)
+    return buffer
   }
 
   @Get('today-summary')

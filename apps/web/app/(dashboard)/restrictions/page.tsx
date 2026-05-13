@@ -20,7 +20,7 @@ import {
   groupBetTypesForUi,
 } from '@lotto/shared'
 import { cn, formatThaiDate } from '@/lib/utils'
-import { Trash2, Plus, RefreshCw } from 'lucide-react'
+import { Trash2, Plus, RefreshCw, Ban, ShieldCheck } from 'lucide-react'
 
 const POS_BLUE = '#0284c7'
 
@@ -43,6 +43,12 @@ export default function RestrictionsPage() {
   const { data: restrictions, isLoading: restrictLoading, refetch } = useRestrictions(currentRound?.id ?? null)
   const createRestriction = useCreateRestriction(currentRound?.id ?? '')
   const deleteRestriction = useDeleteRestriction()
+
+  useEffect(() => {
+    if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
+      setSelectedTypeId(lotteryTypes[0].id)
+    }
+  }, [selectedTypeId, lotteryTypes])
 
   const selectedType = lotteryTypes?.find((lt) => lt.id === selectedTypeId)
   const allowedBetTypes = useMemo(
@@ -128,6 +134,7 @@ export default function RestrictionsPage() {
 
       {!selectedTypeId && (
         <div className="rounded-xl border border-dashed border-sky-200 bg-sky-50/40 py-16 text-center text-slate-500">
+          <Ban className="h-10 w-10 mx-auto mb-3 text-slate-300" />
           <p className="text-lg">เลือกประเภทหวยเพื่อเริ่มจัดการเลขอั้น</p>
         </div>
       )}
@@ -316,6 +323,7 @@ export default function RestrictionsPage() {
                   <LoadingSpinner className="py-8" />
                 ) : !restrictions || restrictions.length === 0 ? (
                   <div className="py-12 text-center text-sm text-slate-400">
+                    <ShieldCheck className="h-8 w-8 mx-auto mb-2 text-slate-300" />
                     ไม่มีเลขอั้น
                   </div>
                 ) : (

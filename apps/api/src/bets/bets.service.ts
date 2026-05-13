@@ -3,10 +3,12 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  StreamableFile,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, DataSource } from 'typeorm'
 import Decimal from 'decimal.js'
+import * as ExcelJS from 'exceljs'
 import { Bet } from '../entities/bet.entity'
 import { BetItem } from '../entities/bet-item.entity'
 import { Restriction } from '../entities/restriction.entity'
@@ -14,7 +16,7 @@ import { PrizeRate } from '../entities/prize-rate.entity'
 import { LotteryRound } from '../entities/lottery-round.entity'
 import { LotteryResult } from '../entities/lottery-result.entity'
 import { LotteryType } from '../entities/lottery-type.entity'
-import { BetStatus, RestrictionType, RoundStatus, ResultStructure, BetType, CreateBetDto } from '@lotto/shared'
+import { BetStatus, RestrictionType, RoundStatus, ResultStructure, BetType, CreateBetDto, BET_TYPE_LABEL } from '@lotto/shared'
 
 @Injectable()
 export class BetsService {
@@ -285,6 +287,74 @@ export class BetsService {
       billCount: Number(result?.billCount ?? 0),
       totalAmount: result?.totalAmount ?? '0',
     }
+  }
+
+  async exportRound(roundId: string): Promise<{ buffer: Buffer; filename: string }> {
+    const bets = await this.betsRepo.find({
+      where: { round_id: roundId, status: BetStatus.PENDING },
+      relations: ['items', 'round', 'round.lottery_type'],
+      order: { created_at: 'ASC' },
+    })
+
+    const round = bets[0]?.round
+    const drawDate = round?.draw_date ?? 'unknown'
+    const typeName = round?.lottery_type?.name ?? ''
+
+    const wb = new ExcelJS.Workbook()
+    const ws = wb.addWorksheet('รายการบิล')
+
+    ws.columns = [
+      { header: 'ลำดับ', key: 'row', width: 6 },
+      { header: 'เวลา', key: 'time', width: 8 },
+      { header: 'คนซื้อ', key: 'buyer', width: 16 },
+      { header: 'เลข', key: 'number', width: 10 },
+      { header: 'ประเภท', key: 'betType', width: 14 },
+      { header: 'ยอด (บาท)', key: 'amount', width: 12 },
+      { header: 'สถานะ', key: 'status', width: 10 },
+    ]
+
+    // Style headers
+    const headerRow = ws.getRow(1)
+    headerRow.font = { bold: true }
+    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2FE' } }
+
+    let rowNum = 2
+    let total = 0
+    for (const bet of bets) {
+      const time = bet.created_at ? new Date(bet.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : ''
+      const buyer = bet.buyer_name ?? '—'
+
+      for (const item of bet.items) {
+        ws.addRow({
+          row: rowNum - 1,
+          time,
+          buyer,
+          number: item.number,
+          betType: BET_TYPE_LABEL[item.bet_type as BetType] ?? item.bet_type,
+          amount: Number(item.amount),
+          status: bet.status,
+        })
+        total += Number(item.amount)
+        rowNum++
+      }
+    }
+
+    // Total row
+    ws.addRow({})
+    const totalRow = ws.addRow({
+      row: '',
+      time: '',
+      buyer: '',
+      number: '',
+      betType: 'รวมทั้งสิ้น',
+      amount: total,
+      status: '',
+    })
+    totalRow.font = { bold: true }
+    totalRow.getCell('amount').numFmt = '#,##0.00'
+
+    const buffer = await wb.xlsx.writeBuffer()
+    return { buffer: Buffer.from(buffer), filename: `bills_${typeName}_${drawDate}.xlsx` }
   }
 
   async cancel(id: string) {

@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
 import { dayjs, formatThaiDate } from '@/lib/utils'
 import { CalendarDays } from 'lucide-react'
+import { Toaster } from '@/components/ui/toaster'
 import api from '@/lib/api'
 
 function Spinner() {
@@ -71,9 +73,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </span>
           </div>
         </header>
-        <div className="flex-1 p-4 md:p-6 pb-20 lg:pb-6">{children}</div>
+        <div className="flex-1 p-4 md:p-6 pb-20 lg:pb-6">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </div>
       </main>
       <BottomNav />
+      <Toaster />
     </div>
   )
 }

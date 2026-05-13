@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
 import { useRounds } from '@/lib/hooks/useRounds'
 import { useIncomeSummary } from '@/lib/hooks/useIncome'
@@ -27,6 +27,12 @@ export default function IncomePage() {
   const { data: lotteryTypes, isLoading } = useLotteryTypes()
   const { data: rounds } = useRounds(selectedTypeId ?? undefined, 'resulted')
   const { data: summary, isLoading: summaryLoading } = useIncomeSummary(selectedRoundId)
+
+  useEffect(() => {
+    if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
+      setSelectedTypeId(lotteryTypes[0].id)
+    }
+  }, [selectedTypeId, lotteryTypes])
 
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
@@ -181,13 +187,13 @@ export default function IncomePage() {
                       <BarChart3 className="h-4 w-4" />
                       แยกตามประเภทหวย
                     </div>
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-slate-100 overflow-x-auto">
                       {summary.byLotteryType.map((lt: { code: string; name: string; received: string; payout: string; profit: string }) => {
                         const ltProfit = parseFloat(lt.profit)
                         return (
-                          <div key={lt.code} className="flex items-center justify-between px-4 py-3">
+                          <div key={lt.code} className="flex items-center justify-between px-4 py-3 min-w-[320px]">
                             <span className="text-sm font-medium text-slate-700">{lt.name}</span>
-                            <div className="flex items-center gap-4 text-sm tabular-nums">
+                            <div className="flex items-center gap-2 sm:gap-4 text-sm tabular-nums">
                               <span className="text-slate-500">รับ {formatCurrency(lt.received)}</span>
                               <span className="text-red-500">จ่าย {formatCurrency(lt.payout)}</span>
                               <span className={cn(

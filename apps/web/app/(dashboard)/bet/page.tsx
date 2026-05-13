@@ -8,6 +8,7 @@ import { useRestrictions } from '@/lib/hooks/useRestrictions'
 import { useBetStore } from '@/lib/stores/useBetStore'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Countdown } from '@/components/shared/Countdown'
+import { Receipt } from '@/components/shared/Receipt'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
@@ -16,6 +17,7 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog'
 import {
   BET_TYPE_DIGIT_COUNT,
@@ -75,6 +77,25 @@ export default function BetPage() {
     title: '',
     message: '',
   })
+  const [receiptDialog, setReceiptDialog] = useState<{
+    show: boolean
+    billNo: string
+    drawDate: string
+    typeName: string
+    buyerName: string
+    items: Array<{ number: string; bet_type: string; amount: string }>
+    totalAmount: number
+    createdAt: string
+  }>({
+    show: false,
+    billNo: '',
+    drawDate: '',
+    typeName: '',
+    buyerName: '',
+    items: [],
+    totalAmount: 0,
+    createdAt: '',
+  })
 
   const { data: lotteryTypes, isLoading: typesLoading } = useLotteryTypes()
   const { data: prizeRates } = usePrizeRates(selectedTypeId)
@@ -84,6 +105,13 @@ export default function BetPage() {
   const createBet = useCreateBet()
 
   const selectedType = lotteryTypes?.find((lt) => lt.id === selectedTypeId)
+
+  useEffect(() => {
+    if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
+      setSelectedTypeId(lotteryTypes[0].id)
+    }
+  }, [selectedTypeId, lotteryTypes])
+
   const allowedBetTypes = useMemo(
     () => (selectedType ? LOTTERY_TYPE_BET_TYPES[selectedType.code] ?? [] : []),
     [selectedType],
@@ -178,7 +206,9 @@ export default function BetPage() {
   const handleSubmit = useCallback(async () => {
     if (!currentRound || draftItems.length === 0 || !selectedTypeId) return
 
-    await createBet.mutateAsync({
+    const total = draftItems.reduce((sum, item) => sum + item.amount, 0)
+
+    const savedBet = await createBet.mutateAsync({
       round_id: currentRound.id,
       lottery_type_id: selectedTypeId,
       buyer_name: buyerName || undefined,
@@ -188,6 +218,22 @@ export default function BetPage() {
         bet_type: item.bet_type,
         amount: item.amount,
       })),
+    })
+
+    // Show receipt dialog
+    setReceiptDialog({
+      show: true,
+      billNo: savedBet.id?.slice(-8).toUpperCase() ?? draftBillNo,
+      drawDate: currentRound.draw_date,
+      typeName: selectedType?.name ?? '',
+      buyerName: buyerName || 'ลูกค้าทั่วไป',
+      items: (savedBet.items ?? draftItems).map((item: { number: string; bet_type: string; amount: string | number }) => ({
+        number: item.number,
+        bet_type: item.bet_type,
+        amount: String(item.amount),
+      })),
+      totalAmount: Number(savedBet.total_amount ?? total),
+      createdAt: savedBet.created_at ?? new Date().toISOString(),
     })
 
     clearItems()
@@ -202,8 +248,10 @@ export default function BetPage() {
     clearItems,
     createBet,
     currentRound,
+    draftBillNo,
     draftItems,
     note,
+    selectedType?.name,
     selectedTypeId,
   ])
 
@@ -217,6 +265,9 @@ export default function BetPage() {
     setIsReverse(false)
   }, [clearItems])
 
+  const totalAmount = draftItems.reduce((sum, item) => sum + item.amount, 0)
+  const isClosed = !currentRound || (!!currentRound?.close_at && new Date(currentRound.close_at) < new Date())
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!selectedTypeId) return
@@ -228,18 +279,23 @@ export default function BetPage() {
         e.preventDefault()
         handleClearForm()
       }
-      if (e.key === 'F4' || e.key === 'F5') {
+      if (e.key === 'F4') {
+        e.preventDefault()
+        if (receiptDialog.show) {
+          window.print()
+        } else if (draftItems.length > 0 && !isClosed) {
+          void handleSubmit()
+        }
+      }
+      if (e.key === 'F5') {
         e.preventDefault()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleClearForm, handleSubmit, selectedTypeId])
+  }, [handleClearForm, handleSubmit, receiptDialog.show, draftItems.length, isClosed, selectedTypeId])
 
   if (typesLoading) return <LoadingSpinner className="mt-20" size="lg" />
-
-  const totalAmount = draftItems.reduce((sum, item) => sum + item.amount, 0)
-  const isClosed = !currentRound || (!!currentRound?.close_at && new Date(currentRound.close_at) < new Date())
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 pb-6">
@@ -651,13 +707,20 @@ export default function BetPage() {
             <Button
               type="button"
               variant="secondary"
-              className="h-12 flex-1 min-w-[140px] gap-2 border border-slate-300 bg-white text-slate-400 shadow-sm"
-              disabled
-              title="เร็วๆ นี้"
+              className="h-12 flex-1 min-w-[140px] gap-2 border border-slate-300 bg-white shadow-sm hover:bg-slate-50"
+              onClick={() => {
+                if (receiptDialog.show) {
+                  window.print()
+                } else if (draftItems.length > 0 && !isClosed) {
+                  void handleSubmit()
+                }
+              }}
+              disabled={draftItems.length === 0 || isClosed}
+              title={draftItems.length === 0 ? 'กรุณาเพิ่มรายการ' : isClosed ? 'งวดนี้ปิดรับแล้ว' : receiptDialog.show ? 'พิมพ์ใบเสร็จ (F4)' : 'บันทึกและพิมพ์ใบเสร็จ (F4)'}
             >
-              <Printer className="h-4 w-4" />
-              <span>พิมพ์ใบเสร็จ</span>
-              <kbd className="ml-1 hidden rounded border border-slate-200 px-1.5 py-0.5 font-mono text-[10px] sm:inline">
+              <Printer className="h-4 w-4 text-[#0284c7]" />
+              <span className="font-medium">พิมพ์ใบเสร็จ</span>
+              <kbd className="ml-1 hidden rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] sm:inline">
                 F4
               </kbd>
             </Button>
@@ -698,6 +761,43 @@ export default function BetPage() {
               รับทราบ
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Receipt Dialog */}
+      <Dialog
+        open={receiptDialog.show}
+        onOpenChange={(open) => {
+          if (!open) setReceiptDialog((s) => ({ ...s, show: false }))
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogTitle className="sr-only">ใบเสร็จ</DialogTitle>
+          <DialogDescription className="sr-only">รายละเอียดใบเสร็จรับเงิน</DialogDescription>
+          <Receipt
+            billNo={receiptDialog.billNo}
+            drawDate={receiptDialog.drawDate}
+            typeName={receiptDialog.typeName}
+            buyerName={receiptDialog.buyerName}
+            items={receiptDialog.items}
+            totalAmount={receiptDialog.totalAmount}
+            createdAt={receiptDialog.createdAt}
+          />
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setReceiptDialog((s) => ({ ...s, show: false }))}
+            >
+              ปิด
+            </Button>
+            <Button
+              onClick={() => window.print()}
+              className="gap-2 bg-[#0284c7] hover:bg-[#0369a1]"
+            >
+              <Printer className="h-4 w-4" />
+              พิมพ์
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

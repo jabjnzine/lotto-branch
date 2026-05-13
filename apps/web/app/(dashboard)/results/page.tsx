@@ -11,8 +11,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatThaiDate } from '@/lib/utils'
+import { useToastStore } from '@/lib/stores/useToastStore'
 import { ResultStructure } from '@lotto/shared'
-import { CheckCircle, Download } from 'lucide-react'
+import { CheckCircle, Download, Trophy } from 'lucide-react'
 
 const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'destructive' | 'warning' | 'default' }> = {
   open: { label: 'เปิดรับ', variant: 'success' },
@@ -197,6 +198,31 @@ export default function ResultsPage() {
   const fetchLao = useFetchLaoResult()
 
   const selectedType = lotteryTypes?.find((lt) => lt.id === selectedTypeId)
+  const toast = useToastStore((s) => s.toast)
+
+  useEffect(() => {
+    if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
+      setSelectedTypeId(lotteryTypes[0].id)
+    }
+  }, [selectedTypeId, lotteryTypes])
+
+  useEffect(() => {
+    if (fetchThai.data) {
+      toast({ title: 'ดึงผลสำเร็จ', description: fetchThai.data.message, variant: 'success' })
+    }
+    if (fetchThai.error) {
+      toast({ title: 'ดึงผลล้มเหลว', description: (fetchThai.error as Error).message, variant: 'destructive' })
+    }
+  }, [fetchThai.data, fetchThai.error])
+
+  useEffect(() => {
+    if (fetchLao.data) {
+      toast({ title: 'ดึงผลสำเร็จ', description: fetchLao.data.message, variant: 'success' })
+    }
+    if (fetchLao.error) {
+      toast({ title: 'ดึงผลล้มเหลว', description: (fetchLao.error as Error).message, variant: 'destructive' })
+    }
+  }, [fetchLao.data, fetchLao.error])
 
   const sortedRounds = useMemo(() => {
     if (!rounds) return []
@@ -297,7 +323,10 @@ export default function ResultsPage() {
                 )
               })}
               {(!rounds || rounds.length === 0) && (
-                <p className="text-sm text-slate-400 text-center py-6">ไม่มีงวด</p>
+                <p className="text-sm text-slate-400 text-center py-6">
+                  <Trophy className="h-6 w-6 mx-auto mb-1 text-slate-300" />
+                  ไม่มีงวด
+                </p>
               )}
             </CardContent>
           </Card>
