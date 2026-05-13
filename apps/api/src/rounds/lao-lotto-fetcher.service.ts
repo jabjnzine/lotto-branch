@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Cron } from '@nestjs/schedule'
 import { Repository } from 'typeorm'
-import * as cheerio from 'cheerio'
+import { load } from 'cheerio'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
@@ -137,7 +137,7 @@ export class LaoLottoFetcherService {
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
 
     const html = await res.text()
-    const $ = cheerio.load(html)
+    const $ = load(html)
 
     // ดึงวันที่จาก <title> — "ตรวจหวยลาว 11 พฤษภาคม 2569"
     const title = $('title').text()
@@ -153,7 +153,7 @@ export class LaoLottoFetcherService {
 
     $('.tag-dummy').each((_, el) => {
       const $el = $(el)
-      const tag = el.tagName.toLowerCase()
+      const tag = el.tagName?.toLowerCase() ?? ''
       const text = $el.text().trim()
 
       if (tag === 'h2' && text === 'เลขท้าย 4 ตัว') {
@@ -175,7 +175,7 @@ export class LaoLottoFetcherService {
 
       if (tag === 'h2' && text === 'หวยลาวพัฒนา') {
         // h2 → parent (th) → next sibling (tdFull) → strong × 5
-        $el.parent().next().find('strong').each((__, strong) => {
+        $el.parent().next().find('strong').each((_, strong) => {
           const n = $(strong).text().trim()
           if (/^\d{2}$/.test(n)) patthanaNumbers.push(n)
         })

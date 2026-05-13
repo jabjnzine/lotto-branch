@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs_22", "pnpm"]
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
+
+[phases.build]
+cmds = [
+  "pnpm --filter @lotto/shared build",
+  "pnpm --filter @lotto/api build"
+]
+
+[start]
+cmd = "node apps/api/dist/main.js"

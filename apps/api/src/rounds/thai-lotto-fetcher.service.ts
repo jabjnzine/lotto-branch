@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Cron } from '@nestjs/schedule'
 import { Repository } from 'typeorm'
-import * as cheerio from 'cheerio'
+import { load } from 'cheerio'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
@@ -119,7 +119,7 @@ export class ThaiLottoFetcherService {
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
 
     const html = await res.text()
-    const $ = cheerio.load(html)
+    const $ = load(html)
 
     // ดึงวันที่จาก <title> — "ตรวจหวย ผลสลากกินแบ่งรัฐบาล งวดวันที่ 2 พฤษภาคม 2569"
     const title = $('title').text()
@@ -139,14 +139,14 @@ export class ThaiLottoFetcherService {
       const label = $(col).find('.default-font--reward').text().trim()
 
       if (label === 'เลขหน้า 3 ตัว') {
-        $(col).find('.lotto__number').each((__, el) => {
+        $(col).find('.lotto__number').each((_, el) => {
           const n = $(el).text().trim()
           if (/^\d{3}$/.test(n)) threeFront.push(n)
         })
       }
 
       if (label === 'เลขท้าย 3 ตัว') {
-        $(col).find('.lotto__number').each((__, el) => {
+        $(col).find('.lotto__number').each((_, el) => {
           const n = $(el).text().trim()
           if (/^\d{3}$/.test(n)) threeBack.push(n)
         })
