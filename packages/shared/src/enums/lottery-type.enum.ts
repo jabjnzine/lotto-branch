@@ -7,8 +7,6 @@ export enum DrawScheduleType {
 export enum ResultStructure {
   THAI_FULL = 'thai_full',
   LAO_FULL = 'lao_full',
-  LAO_5DIGIT = 'lao_5digit',
-  LAO_3_2 = 'lao_3_2',
   LAO_5_2 = 'lao_5_2',
 }
 

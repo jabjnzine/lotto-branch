@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLotteryTypes, usePrizeRates } from '@/lib/hooks/useLotteryTypes'
 import { useCurrentRound } from '@/lib/hooks/useRounds'
 import { useCreateBet } from '@/lib/hooks/useBets'
+import { useRestrictions } from '@/lib/hooks/useRestrictions'
 import { useBetStore } from '@/lib/stores/useBetStore'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Countdown } from '@/components/shared/Countdown'
@@ -11,10 +12,17 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
+import {
   BET_TYPE_DIGIT_COUNT,
   BET_TYPE_LABEL,
   LOTTERY_TYPE_BET_TYPES,
   BetType,
+  RestrictionType,
   type BetTypeGroupId,
   groupBetTypesForUi,
 } from '@lotto/shared'
@@ -27,6 +35,7 @@ import {
   RotateCcw,
   Save,
   Trash2,
+  AlertTriangle,
 } from 'lucide-react'
 
 /** จำนวนแถวขั้นต่ำในตาราง (ช่องว่าง) เมื่อรายการยังไม่ถึงเท่านี้ */
@@ -61,10 +70,16 @@ export default function BetPage() {
     () => `BT-${dayjs().format('YYMMDD')}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
   )
   const [activeBetGroupId, setActiveBetGroupId] = useState<BetTypeGroupId | null>(null)
+  const [alertDialog, setAlertDialog] = useState<{ show: boolean; title: string; message: string }>({
+    show: false,
+    title: '',
+    message: '',
+  })
 
   const { data: lotteryTypes, isLoading: typesLoading } = useLotteryTypes()
   const { data: prizeRates } = usePrizeRates(selectedTypeId)
   const { data: currentRound } = useCurrentRound(selectedTypeId)
+  const { data: restrictions } = useRestrictions(currentRound?.id ?? null)
   const { draftItems, addItem, removeItem, clearItems } = useBetStore()
   const createBet = useCreateBet()
 
@@ -117,6 +132,36 @@ export default function BetPage() {
   const handleAddItem = () => {
     if (!number || !amount || number.length !== maxLength) return
     const numAmount = parseFloat(amount)
+
+    // เช็คเลขอั้น
+    const restriction = restrictions?.find(
+      (r: { number: string; bet_type: string; restriction_type: string; limit_amount?: string | null }) =>
+        r.number === number && r.bet_type === selectedBetType,
+    )
+    if (restriction) {
+      if (restriction.restriction_type === RestrictionType.CLOSED) {
+        setAlertDialog({
+          show: true,
+          title: 'เลขอั้น',
+          message: `เลข ${number} (${BET_TYPE_LABEL[selectedBetType]}) ปิดรับแล้ว`,
+        })
+        return
+      }
+      if (restriction.restriction_type === RestrictionType.LIMITED && restriction.limit_amount) {
+        const limit = parseFloat(restriction.limit_amount)
+        const alreadyInDraft = draftItems
+          .filter((item) => item.number === number && item.bet_type === selectedBetType)
+          .reduce((sum, item) => sum + item.amount, 0)
+        if (alreadyInDraft + numAmount > limit) {
+          setAlertDialog({
+            show: true,
+            title: 'วงเงินอั้นเต็ม',
+            message: `เลข ${number} รับได้อีก ${Math.max(0, limit - alreadyInDraft).toLocaleString()} บาท`,
+          })
+          return
+        }
+      }
+    }
 
     addItem({ id: itemId(), number, bet_type: selectedBetType, amount: numAmount })
 
@@ -194,7 +239,7 @@ export default function BetPage() {
   if (typesLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
   const totalAmount = draftItems.reduce((sum, item) => sum + item.amount, 0)
-  const isClosed = !currentRound
+  const isClosed = !currentRound || (!!currentRound?.close_at && new Date(currentRound.close_at) < new Date())
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 pb-6">
@@ -632,6 +677,29 @@ export default function BetPage() {
           </div>
         </>
       )}
+
+      {/* Alert Dialog */}
+      <Dialog open={alertDialog.show} onOpenChange={(open) => { if (!open) setAlertDialog({ show: false, title: '', message: '' }) }}>
+        <DialogContent className="max-w-sm p-0 [&>button]:hidden">
+          <div className="flex flex-col items-center px-6 pt-8 pb-2">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-red-100 mb-4">
+              <AlertTriangle className="h-7 w-7 text-red-500" />
+            </div>
+            <DialogTitle className="text-center text-lg mb-1.5">{alertDialog.title}</DialogTitle>
+            <DialogDescription className="text-center text-base text-slate-600">
+              {alertDialog.message}
+            </DialogDescription>
+          </div>
+          <div className="px-6 pb-6 pt-3">
+            <Button
+              onClick={() => setAlertDialog({ show: false, title: '', message: '' })}
+              className="w-full bg-red-500 hover:bg-red-600 text-white h-11 text-base font-semibold"
+            >
+              รับทราบ
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

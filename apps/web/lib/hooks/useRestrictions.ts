@@ -7,7 +7,6 @@ export function useRestrictions(roundId: string | null) {
     queryKey: ['restrictions', roundId],
     queryFn: () => api.get(`/rounds/${roundId}/restrictions`).then((r) => r.data),
     enabled: !!roundId,
-    refetchInterval: 30_000,
   })
 }
 

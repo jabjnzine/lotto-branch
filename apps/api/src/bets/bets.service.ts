@@ -169,10 +169,6 @@ export class BetsService {
         case ResultStructure.THAI_FULL:
         case ResultStructure.LAO_FULL:
           return { topDigits: result.first_prize ?? '', bottomDigits: result.two_last ?? '' }
-        case ResultStructure.LAO_5DIGIT:
-          return { topDigits: result.first_prize ?? '', bottomDigits: result.two_last ?? '' }
-        case ResultStructure.LAO_3_2:
-          return { topDigits: result.three_top ?? '', bottomDigits: result.two_last ?? '' }
         case ResultStructure.LAO_5_2: {
           const nums = (Array.isArray(result.three_front) ? result.three_front : []) as string[]
           const joined = nums.join('')

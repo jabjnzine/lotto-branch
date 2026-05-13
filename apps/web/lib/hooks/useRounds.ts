@@ -26,16 +26,22 @@ export function useCurrentRound(lotteryTypeId: string | null) {
   })
 }
 
-export function useRounds(lotteryTypeId?: string, status?: string) {
+export function useRounds(lotteryTypeId?: string, status?: string, date?: string) {
   return useQuery<LotteryRound[]>({
-    queryKey: ['rounds', lotteryTypeId, status],
+    queryKey: ['rounds', lotteryTypeId, status, date],
     queryFn: () => {
       const params = new URLSearchParams()
       if (lotteryTypeId) params.set('lotteryTypeId', lotteryTypeId)
       if (status) params.set('status', status)
+      if (date) params.set('date', date)
       return api.get(`/rounds?${params}`).then((r) => r.data)
     },
   })
+}
+
+export function useTodayRounds() {
+  const today = new Date().toISOString().slice(0, 10)
+  return useRounds(undefined, undefined, today)
 }
 
 export function useCancelRound() {
@@ -50,6 +56,17 @@ export function useFetchThaiResult() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: () => api.post('/rounds/fetch-thai').then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['rounds'] })
+      qc.invalidateQueries({ queryKey: ['result'] })
+    },
+  })
+}
+
+export function useFetchLaoResult() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post('/rounds/fetch-lao').then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rounds'] })
       qc.invalidateQueries({ queryKey: ['result'] })

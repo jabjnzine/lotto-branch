@@ -121,6 +121,7 @@ export class InitSchema1700000000000 implements MigrationInterface {
         "round_id"         UUID          NOT NULL,
         "lottery_type_id"  UUID          NOT NULL,
         "user_id"          UUID          NOT NULL,
+        "buyer_name"       VARCHAR,
         "note"             VARCHAR,
         "total_amount"     DECIMAL(12,2) NOT NULL DEFAULT 0,
         "status"           VARCHAR       NOT NULL DEFAULT 'pending',
@@ -173,10 +174,9 @@ export class InitSchema1700000000000 implements MigrationInterface {
       INSERT INTO "lottery_types"
         ("id", "name", "code", "draw_schedule_type", "draw_days", "draw_time", "result_structure", "close_before_minutes", "is_active")
       VALUES
-        (gen_random_uuid(), 'หวยรัฐบาลไทย',    'TH',            'monthly_dates', '[1, 16]',                              '15:30', 'thai_full',  30, true),
-        (gen_random_uuid(), 'หวยลาวพัฒนา',     'LAO_PATTHANA',  'weekdays',      '["MON","TUE","WED","THU","FRI"]',      '20:00', 'thai_full',  30, true),
-        (gen_random_uuid(), 'หวยลาวซุปเปอร์',  'LAO_SUPER',     'daily',         '[]',                                   '21:00', 'lao_5digit', 30, true),
-        (gen_random_uuid(), 'หวยลาวสตาร์/HD',  'LAO_STAR',      'daily',         '[]',                                   '21:30', 'lao_3_2',   30, true)
+        (gen_random_uuid(), 'หวยรัฐบาลไทย',  'TH',            'monthly_dates', '[1, 16]',                           '15:30', 'thai_full', 30, true),
+        (gen_random_uuid(), 'หวยลาว',         'LAO',           'daily',         '[]',                                '20:00', 'lao_full',  30, true),
+        (gen_random_uuid(), 'หวยลาวพัฒนา',   'LAO_PATTHANA',  'weekdays',      '["MON","WED","FRI"]',               '20:00', 'lao_5_2',   30, true)
     `)
 
     // ─── Seed: prize_rates ────────────────────────────────────────────────
@@ -188,21 +188,15 @@ export class InitSchema1700000000000 implements MigrationInterface {
     `)
     await queryRunner.query(`
       INSERT INTO "prize_rates" ("lottery_type_id", "bet_type", "payout_rate")
-      SELECT id, unnest(ARRAY['3_top','3_tod','3_front','3_back','2_top','2_bottom','run_top','run_bottom']),
-             unnest(ARRAY[500, 120, 450, 450, 70, 70, 3.2, 4.2]::DECIMAL[])
+      SELECT id, unnest(ARRAY['4_top','3_top','3_tod','2_top','2_bottom','run_top','run_bottom']),
+             unnest(ARRAY[60000, 500, 120, 70, 70, 3.2, 4.2]::DECIMAL[])
+      FROM "lottery_types" WHERE "code" = 'LAO'
+    `)
+    await queryRunner.query(`
+      INSERT INTO "prize_rates" ("lottery_type_id", "bet_type", "payout_rate")
+      SELECT id, unnest(ARRAY['2_top','2_bottom','run_top','run_bottom']),
+             unnest(ARRAY[70, 70, 3.2, 4.2]::DECIMAL[])
       FROM "lottery_types" WHERE "code" = 'LAO_PATTHANA'
-    `)
-    await queryRunner.query(`
-      INSERT INTO "prize_rates" ("lottery_type_id", "bet_type", "payout_rate")
-      SELECT id, unnest(ARRAY['5_top','2_top','2_bottom','run_top','run_bottom']),
-             unnest(ARRAY[50000, 70, 70, 3.2, 4.2]::DECIMAL[])
-      FROM "lottery_types" WHERE "code" = 'LAO_SUPER'
-    `)
-    await queryRunner.query(`
-      INSERT INTO "prize_rates" ("lottery_type_id", "bet_type", "payout_rate")
-      SELECT id, unnest(ARRAY['3_top','3_tod','2_bottom','run_top','run_bottom']),
-             unnest(ARRAY[500, 120, 70, 3.2, 4.2]::DECIMAL[])
-      FROM "lottery_types" WHERE "code" = 'LAO_STAR'
     `)
 
     // ─── Seed: admin user (password: admin1234) ───────────────────────────

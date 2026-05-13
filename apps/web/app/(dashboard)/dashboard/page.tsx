@@ -1,8 +1,7 @@
 'use client'
 
 import { useAuthStore } from '@/lib/stores/useAuthStore'
-import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
-import { useRounds } from '@/lib/hooks/useRounds'
+import { useTodayRounds } from '@/lib/hooks/useRounds'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,8 +20,7 @@ const statusLabel: Record<string, { label: string; variant: 'success' | 'destruc
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
-  const { data: lotteryTypes, isLoading } = useLotteryTypes()
-  const { data: rounds } = useRounds(undefined, 'open')
+  const { data: todayRounds, isLoading } = useTodayRounds()
 
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
@@ -32,6 +30,8 @@ export default function DashboardPage() {
     { href: '/results', label: 'ผลหวย', icon: Trophy, color: 'bg-amber-500', desc: 'บันทึกผล' },
     { href: '/income', label: 'รายได้', icon: TrendingUp, color: 'bg-green-500', desc: 'ดูยอดรายได้' },
   ]
+
+  const today = new Date().toISOString().slice(0, 10)
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -57,18 +57,18 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Active Rounds */}
+      {/* Today's Rounds */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">งวดที่เปิดรับอยู่</CardTitle>
+          <CardTitle className="text-base">งวดวันนี้ ({formatThaiDate(today)})</CardTitle>
         </CardHeader>
         <CardContent>
-          {!rounds || rounds.length === 0 ? (
-            <p className="text-sm text-slate-400 text-center py-4">ไม่มีงวดที่เปิดรับ</p>
+          {!todayRounds || todayRounds.length === 0 ? (
+            <p className="text-sm text-slate-400 text-center py-4">ไม่มีงวดในวันนี้</p>
           ) : (
             <div className="space-y-3">
-              {rounds.map((round) => {
-                const status = statusLabel[round.status] ?? { label: round.status, variant: 'default' as const }
+              {todayRounds.map((round) => {
+                const st = statusLabel[round.status] ?? { label: round.status, variant: 'default' as const }
                 return (
                   <div
                     key={round.id}
@@ -76,42 +76,20 @@ export default function DashboardPage() {
                   >
                     <div>
                       <p className="font-medium text-sm">{round.lottery_type?.name}</p>
-                      <p className="text-xs text-slate-400">{formatThaiDate(round.draw_date)}</p>
+                      <p className="text-xs text-slate-400">ปิดรับ {round.close_at ? new Date(round.close_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '-'} น.</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <p className="text-xs text-slate-400 mb-0.5">ปิดรับใน</p>
                         <Countdown closeAt={round.close_at} />
                       </div>
-                      <Badge variant={status.variant}>{status.label}</Badge>
+                      <Badge variant={st.variant}>{st.label}</Badge>
                     </div>
                   </div>
                 )
               })}
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Lottery Types */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">ประเภทหวย</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {lotteryTypes?.map((lt) => (
-              <div key={lt.id} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg">
-                <div>
-                  <p className="font-medium text-sm">{lt.name}</p>
-                  <p className="text-xs text-slate-400">ปิด {lt.close_before_minutes} นาทีก่อนออกผล</p>
-                </div>
-                <Badge variant={lt.is_active ? 'success' : 'secondary'}>
-                  {lt.is_active ? 'เปิด' : 'ปิด'}
-                </Badge>
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
     </div>

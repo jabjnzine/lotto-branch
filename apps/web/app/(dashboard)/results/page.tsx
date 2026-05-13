@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
 import { useRounds } from '@/lib/hooks/useRounds'
 import { useResult, useSaveResult } from '@/lib/hooks/useResults'
-import { useFetchThaiResult } from '@/lib/hooks/useRounds'
+import { useFetchThaiResult, useFetchLaoResult } from '@/lib/hooks/useRounds'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -80,24 +80,28 @@ function ResultForm({
 
   const isThaiFull = resultStructure === ResultStructure.THAI_FULL
   const isLaoFull = resultStructure === ResultStructure.LAO_FULL
-  const isLao5 = resultStructure === ResultStructure.LAO_5DIGIT
-  const isLao32 = resultStructure === ResultStructure.LAO_3_2
   const isLao52 = resultStructure === ResultStructure.LAO_5_2
 
   return (
     <div className="space-y-3">
-      {(isThaiFull || isLao5 || isLaoFull) && (
+      {(isThaiFull || isLaoFull) && (
         <div>
           <label className="text-xs text-slate-500 block mb-1">
-            รางวัลที่ 1 ({isThaiFull ? '6' : isLaoFull ? '4' : '5'} หลัก)
+            {isThaiFull ? 'รางวัลที่ 1 (6 หลัก)' : 'เลขท้าย 4 ตัว'}
           </label>
           <input
             value={firstPrize}
-            onChange={(e) => setFirstPrize(e.target.value.replace(/\D/g, '').slice(0, isThaiFull ? 6 : isLaoFull ? 4 : 5))}
+            onChange={(e) => setFirstPrize(e.target.value.replace(/\D/g, '').slice(0, isThaiFull ? 6 : 4))}
             inputMode="numeric"
-            placeholder={isThaiFull ? '------' : isLaoFull ? '----' : '-----'}
+            placeholder={isThaiFull ? '------' : '----'}
             className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-blue-500"
           />
+          {isLaoFull && firstPrize.length === 4 && (
+            <div className="flex gap-4 mt-2 text-xs text-slate-500">
+              <span>3 ตัวบน = <strong className="text-slate-800 font-mono">{firstPrize.slice(-3)}</strong></span>
+              <span>2 ตัวบน = <strong className="text-slate-800 font-mono">{firstPrize.slice(-2)}</strong></span>
+            </div>
+          )}
         </div>
       )}
       {isThaiFull && (
@@ -125,18 +129,6 @@ function ResultForm({
             />
           </div>
         </>
-      )}
-      {isLao32 && (
-        <div>
-          <label className="text-xs text-slate-500 block mb-1">3 ตัวบน</label>
-          <input
-            value={threeTop}
-            onChange={(e) => setThreeTop(e.target.value.replace(/\D/g, '').slice(0, 3))}
-            inputMode="numeric"
-            placeholder="---"
-            className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-blue-500"
-          />
-        </div>
       )}
       {isLao52 && (
         <div>
@@ -202,6 +194,7 @@ export default function ResultsPage() {
   const { data: lotteryTypes, isLoading } = useLotteryTypes()
   const { data: rounds } = useRounds(selectedTypeId ?? undefined)
   const fetchThai = useFetchThaiResult()
+  const fetchLao = useFetchLaoResult()
 
   const selectedType = lotteryTypes?.find((lt) => lt.id === selectedTypeId)
 
@@ -256,8 +249,23 @@ export default function ResultsPage() {
           {fetchThai.isPending ? 'กำลังดึง...' : 'ดึงผลหวยรัฐบาลอัตโนมัติ'}
         </Button>
       )}
+      {(selectedType?.code === 'LAO' || selectedType?.code === 'LAO_PATTHANA') && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fetchLao.mutate()}
+          disabled={fetchLao.isPending}
+          className="gap-2"
+        >
+          <Download className="h-4 w-4" />
+          {fetchLao.isPending ? 'กำลังดึง...' : 'ดึงผลหวยลาวอัตโนมัติ'}
+        </Button>
+      )}
       {fetchThai.data && (
         <p className="text-sm text-green-600">{fetchThai.data.message}</p>
+      )}
+      {fetchLao.data && (
+        <p className="text-sm text-green-600">{fetchLao.data.message}</p>
       )}
 
       {selectedTypeId && (

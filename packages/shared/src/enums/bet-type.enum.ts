@@ -63,7 +63,7 @@ function betTypeGroupId(betType: BetType): BetTypeGroupId {
   return 'run'
 }
 
-const GROUP_ORDER: BetTypeGroupId[] = ['three_digit', 'four_digit', 'five_digit', 'two_digit', 'run']
+const GROUP_ORDER: BetTypeGroupId[] = ['four_digit', 'three_digit', 'five_digit', 'two_digit', 'run']
 
 /** แบ่งตามลำดับที่ส่งเข้ามา (มักมาจาก LOTTERY_TYPE_BET_TYPES) — คืนเฉพาะกลุ่มที่มีประเภทจริง */
 export function groupBetTypesForUi(allowedInOrder: BetType[]): {
@@ -105,25 +105,11 @@ export const LOTTERY_TYPE_BET_TYPES: Record<string, BetType[]> = {
     BetType.RUN_TOP,
     BetType.RUN_BOTTOM,
   ],
-  LAO_SUPER: [
-    BetType.FIVE_TOP,
-    BetType.TWO_TOP,
-    BetType.TWO_BOTTOM,
-    BetType.RUN_TOP,
-    BetType.RUN_BOTTOM,
-  ],
   LAO: [
     BetType.FOUR_TOP,
     BetType.THREE_TOP,
     BetType.THREE_TOD,
     BetType.TWO_TOP,
-    BetType.TWO_BOTTOM,
-    BetType.RUN_TOP,
-    BetType.RUN_BOTTOM,
-  ],
-  LAO_STAR: [
-    BetType.THREE_TOP,
-    BetType.THREE_TOD,
     BetType.TWO_BOTTOM,
     BetType.RUN_TOP,
     BetType.RUN_BOTTOM,

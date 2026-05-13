@@ -22,11 +22,12 @@ export class RoundsService {
     @Inject(forwardRef(() => BetsService)) private readonly betsService: BetsService,
   ) {}
 
-  findAll(lotteryTypeId?: string, status?: RoundStatus) {
+  findAll(lotteryTypeId?: string, status?: RoundStatus, date?: string) {
     const where: Record<string, unknown> = {}
     if (lotteryTypeId) where['lottery_type_id'] = lotteryTypeId
     if (status) where['status'] = status
-    return this.roundsRepo.find({ where, order: { draw_date: 'DESC' }, relations: ['lottery_type'] })
+    if (date) where['draw_date'] = date
+    return this.roundsRepo.find({ where, order: { draw_date: 'ASC' }, relations: ['lottery_type'] })
   }
 
   async findCurrent(lotteryTypeId: string) {

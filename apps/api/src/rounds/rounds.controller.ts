@@ -11,6 +11,7 @@ import {
 import { RoundsService } from './rounds.service'
 import { RoundsSchedulerService } from './rounds-scheduler.service'
 import { ThaiLottoFetcherService } from './thai-lotto-fetcher.service'
+import { LaoLottoFetcherService } from './lao-lotto-fetcher.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { LotteryRound } from '../entities/lottery-round.entity'
 import { LotteryResult } from '../entities/lottery-result.entity'
@@ -23,14 +24,16 @@ export class RoundsController {
     private readonly service: RoundsService,
     private readonly scheduler: RoundsSchedulerService,
     private readonly fetcher: ThaiLottoFetcherService,
+    private readonly laoFetcher: LaoLottoFetcherService,
   ) {}
 
   @Get()
   findAll(
     @Query('lotteryTypeId') lotteryTypeId?: string,
     @Query('status') status?: RoundStatus,
+    @Query('date') date?: string,
   ) {
-    return this.service.findAll(lotteryTypeId, status)
+    return this.service.findAll(lotteryTypeId, status, date)
   }
 
   @Get('current')
@@ -71,6 +74,11 @@ export class RoundsController {
   @Post('fetch-thai')
   fetchThaiResult() {
     return this.fetcher.fetchLatestAndSave()
+  }
+
+  @Post('fetch-lao')
+  fetchLaoResult() {
+    return this.laoFetcher.fetchLatestAndSave()
   }
 
   @Post(':id/result')
