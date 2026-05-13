@@ -15,6 +15,60 @@ export class IncomeService {
     @InjectRepository(LotteryType) private readonly lotteryTypesRepo: Repository<LotteryType>,
   ) {}
 
+  async getTodayIncome() {
+    const today = new Date().toISOString().slice(0, 10)
+
+    const items = await this.betItemsRepo
+      .createQueryBuilder('bi')
+      .innerJoin('bi.bet', 'b')
+      .innerJoin('b.round', 'r')
+      .innerJoin('r.lottery_type', 'lt')
+      .where('r.draw_date = :today', { today })
+      .andWhere('b.status != :cancelled', { cancelled: BetStatus.CANCELLED })
+      .andWhere('b.deleted_at IS NULL')
+      .select([
+        'lt.code AS "typeCode"',
+        'lt.name AS "typeName"',
+        'SUM(bi.amount) AS "received"',
+        'SUM(COALESCE(bi.win_amount, 0)) AS "payout"',
+      ])
+      .groupBy('lt.code, lt.name')
+      .getRawMany<{
+        typeCode: string
+        typeName: string
+        received: string
+        payout: string
+      }>()
+
+    let totalReceived = new Decimal(0)
+    let totalPayout = new Decimal(0)
+    const byType: { typeCode: string; typeName: string; received: string; payout: string; profit: string }[] = []
+
+    for (const row of items) {
+      const r = new Decimal(row.received ?? 0)
+      const p = new Decimal(row.payout ?? 0)
+      totalReceived = totalReceived.plus(r)
+      totalPayout = totalPayout.plus(p)
+      byType.push({
+        typeCode: row.typeCode,
+        typeName: row.typeName,
+        received: r.toFixed(2),
+        payout: p.toFixed(2),
+        profit: r.minus(p).toFixed(2),
+      })
+    }
+
+    const profit = totalReceived.minus(totalPayout)
+
+    return {
+      totalReceived: totalReceived.toFixed(2),
+      totalPayout: totalPayout.toFixed(2),
+      profit: profit.toFixed(2),
+      isProfitable: profit.gte(0),
+      byType,
+    }
+  }
+
   async getSummaryByRound(roundId: string) {
     const items = await this.betItemsRepo
       .createQueryBuilder('bi')

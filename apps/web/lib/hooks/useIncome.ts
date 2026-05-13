@@ -2,6 +2,21 @@ import { useQuery } from '@tanstack/react-query'
 import api from '../api'
 import { IncomeSummaryResponse } from '@lotto/shared'
 
+export interface TodayIncome {
+  totalReceived: string
+  totalPayout: string
+  profit: string
+  isProfitable: boolean
+  byType: { typeCode: string; typeName: string; received: string; payout: string; profit: string }[]
+}
+
+export function useTodayIncome() {
+  return useQuery<TodayIncome>({
+    queryKey: ['income', 'today'],
+    queryFn: () => api.get('/income/today').then((r) => r.data),
+  })
+}
+
 export function useIncomeSummary(roundId: string | null) {
   return useQuery<IncomeSummaryResponse>({
     queryKey: ['income', 'summary', roundId],

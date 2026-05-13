@@ -3,13 +3,14 @@
 import { useAuthStore } from '@/lib/stores/useAuthStore'
 import { useTodayRounds } from '@/lib/hooks/useRounds'
 import { useTodayBetsSummary } from '@/lib/hooks/useBets'
+import { useTodayIncome } from '@/lib/hooks/useIncome'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Countdown } from '@/components/shared/Countdown'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatCurrency, formatThaiDate } from '@/lib/utils'
-import { Trophy, Ticket, Ban, TrendingUp, FileText, DollarSign } from 'lucide-react'
+import { Trophy, Ticket, Ban, TrendingUp, FileText, DollarSign, TrendingDown } from 'lucide-react'
 import Link from 'next/link'
 
 const statusLabel: Record<string, { label: string; variant: 'success' | 'destructive' | 'default' | 'warning' }> = {
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
   const { data: todayRounds, isLoading } = useTodayRounds()
   const { data: todaySummary } = useTodayBetsSummary()
+  const { data: todayIncome } = useTodayIncome()
 
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
@@ -60,17 +62,17 @@ export default function DashboardPage() {
       </div>
 
       {/* Today's Summary */}
-      {todaySummary && (
-        <div className="grid grid-cols-2 gap-3">
+      {(todaySummary || todayIncome) && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
                 <FileText className="h-5 w-5 text-sky-600" />
               </div>
               <div>
-                <p className="text-xs text-slate-400">จำนวนบิลวันนี้</p>
+                <p className="text-xs text-slate-400">จำนวนบิล</p>
                 <p className="text-xl font-bold tabular-nums text-slate-900">
-                  {todaySummary.billCount.toLocaleString()} <span className="text-sm font-normal text-slate-500">บิล</span>
+                  {todaySummary?.billCount?.toLocaleString() ?? '—'} <span className="text-sm font-normal text-slate-500">บิล</span>
                 </p>
               </div>
             </div>
@@ -81,9 +83,35 @@ export default function DashboardPage() {
                 <DollarSign className="h-5 w-5 text-sky-600" />
               </div>
               <div>
-                <p className="text-xs text-slate-400">ยอดรับวันนี้</p>
+                <p className="text-xs text-slate-400">ยอดรับ</p>
                 <p className="text-xl font-bold tabular-nums text-sky-600">
-                  {formatCurrency(todaySummary.totalAmount)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                  {formatCurrency(todayIncome?.totalReceived ?? todaySummary?.totalAmount ?? '0')} <span className="text-sm font-normal text-slate-500">บาท</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50">
+                <TrendingDown className="h-5 w-5 text-red-500" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">ยอดจ่าย</p>
+                <p className="text-xl font-bold tabular-nums text-red-500">
+                  {formatCurrency(todayIncome?.totalPayout ?? '0')} <span className="text-sm font-normal text-slate-500">บาท</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${todayIncome?.isProfitable ? 'bg-green-50' : 'bg-red-50'}`}>
+                <TrendingUp className={`h-5 w-5 ${todayIncome?.isProfitable ? 'text-green-600' : 'text-red-500'}`} />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">กำไร/ขาดทุน</p>
+                <p className={`text-xl font-bold tabular-nums ${todayIncome?.isProfitable ? 'text-green-600' : 'text-red-500'}`}>
+                  {todayIncome ? `${todayIncome.isProfitable ? '+' : ''}${formatCurrency(todayIncome.profit)}` : '—'} <span className="text-sm font-normal text-slate-500">บาท</span>
                 </p>
               </div>
             </div>

@@ -7,6 +7,11 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 export class IncomeController {
   constructor(private readonly service: IncomeService) {}
 
+  @Get('today')
+  getTodayIncome() {
+    return this.service.getTodayIncome()
+  }
+
   @Get('summary')
   getSummary(@Query('roundId') roundId: string) {
     return this.service.getSummaryByRound(roundId)
