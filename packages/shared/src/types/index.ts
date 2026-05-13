@@ -1,6 +1,6 @@
-import { BetType } from '../enums/bet-type.enum'
-import { RoundStatus, BetStatus, ResultSource, RestrictionType } from '../enums/lottery-type.enum'
-import { UserRole } from '../enums/user-role.enum'
+import { BetType } from '../enums/bet-type.enum.js'
+import { RoundStatus, BetStatus, ResultSource, RestrictionType } from '../enums/lottery-type.enum.js'
+import { UserRole } from '../enums/user-role.enum.js'
 
 export interface PaginatedResponse<T> {
   items: T[]

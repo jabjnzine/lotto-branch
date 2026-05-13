@@ -1,4 +1,4 @@
-import { BetType, BET_TYPE_DIGIT_COUNT } from '../enums/bet-type.enum'
+import { BetType, BET_TYPE_DIGIT_COUNT } from '../enums/bet-type.enum.js'
 
 export function validateBetNumber(number: string, betType: BetType): boolean {
   const digits = BET_TYPE_DIGIT_COUNT[betType]
