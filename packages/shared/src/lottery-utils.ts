@@ -113,6 +113,7 @@ export function checkPrize(result: LotteryResult, bets: BetItem[]): PayoutSummar
 
     switch (bet.bet_type) {
       case '5_top':
+      case '4_top':
         isWinner = !!firstPrize && firstPrize === bet.number
         break
       case '3_top':
@@ -130,16 +131,30 @@ export function checkPrize(result: LotteryResult, bets: BetItem[]): PayoutSummar
       case '2_top':
         if (firstPrize) {
           isWinner = firstPrize.slice(-2) === bet.number
+        } else if (threeFront.length > 0) {
+          isWinner = threeFront.includes(bet.number)
         }
         break
       case '2_bottom':
-        isWinner = !!twoLast && twoLast === bet.number
+        if (twoLast) {
+          isWinner = twoLast === bet.number
+        } else if (threeFront.length > 0) {
+          isWinner = threeFront.includes(bet.number)
+        }
         break
       case 'run_top':
-        isWinner = !!threeTop && threeTop.includes(bet.number)
+        if (threeTop) {
+          isWinner = threeTop.includes(bet.number)
+        } else if (threeFront.length > 0) {
+          isWinner = threeFront.join('').includes(bet.number)
+        }
         break
       case 'run_bottom':
-        isWinner = !!twoLast && twoLast.includes(bet.number)
+        if (twoLast) {
+          isWinner = twoLast.includes(bet.number)
+        } else if (threeFront.length > 0) {
+          isWinner = threeFront.join('').includes(bet.number)
+        }
         break
     }
 

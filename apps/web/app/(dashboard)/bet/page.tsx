@@ -56,7 +56,6 @@ export default function BetPage() {
   const [buyerName, setBuyerName] = useState('')
   const [buyerPhone, setBuyerPhone] = useState('')
   const [note, setNote] = useState('')
-  const [isTopBottom, setIsTopBottom] = useState(false)
   const [isReverse, setIsReverse] = useState(false)
   const [draftBillNo, setDraftBillNo] = useState(
     () => `BT-${dayjs().format('YYMMDD')}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
@@ -98,13 +97,12 @@ export default function BetPage() {
     if (!group.betTypes.includes(selectedBetType)) {
       setSelectedBetType(group.betTypes[0])
       setNumber('')
-      setIsTopBottom(false)
       setIsReverse(false)
     }
   }, [activeBetGroupId, betTypeGroups, selectedBetType])
 
   const maxLength = BET_TYPE_DIGIT_COUNT[selectedBetType] ?? 2
-  const is2Digit = maxLength === 2
+  const canReverse = maxLength === 2 || maxLength === 3
 
   const drawDateLabel = currentRound
     ? dayjs(currentRound.draw_date).format('DD/MM/BBBB')
@@ -120,20 +118,12 @@ export default function BetPage() {
     if (!number || !amount || number.length !== maxLength) return
     const numAmount = parseFloat(amount)
 
-    const reverseNum = is2Digit ? number[1] + number[0] : null
-    const useReverse = isReverse && is2Digit && reverseNum !== number
+    addItem({ id: itemId(), number, bet_type: selectedBetType, amount: numAmount })
 
-    if (isTopBottom && is2Digit) {
-      addItem({ id: itemId(), number, bet_type: BetType.TWO_TOP, amount: numAmount })
-      addItem({ id: itemId(), number, bet_type: BetType.TWO_BOTTOM, amount: numAmount })
-      if (useReverse) {
-        addItem({ id: itemId(), number: reverseNum!, bet_type: BetType.TWO_TOP, amount: numAmount })
-        addItem({ id: itemId(), number: reverseNum!, bet_type: BetType.TWO_BOTTOM, amount: numAmount })
-      }
-    } else {
-      addItem({ id: itemId(), number, bet_type: selectedBetType, amount: numAmount })
-      if (useReverse) {
-        addItem({ id: itemId(), number: reverseNum!, bet_type: selectedBetType, amount: numAmount })
+    if (isReverse && canReverse) {
+      const reverseNum = number.split('').reverse().join('')
+      if (reverseNum !== number) {
+        addItem({ id: itemId(), number: reverseNum, bet_type: selectedBetType, amount: numAmount })
       }
     }
 
@@ -179,7 +169,6 @@ export default function BetPage() {
     setNote('')
     setNumber('')
     setAmount('')
-    setIsTopBottom(false)
     setIsReverse(false)
   }, [clearItems])
 
@@ -222,7 +211,6 @@ export default function BetPage() {
               const types = LOTTERY_TYPE_BET_TYPES[lt.code] ?? []
               setSelectedBetType(types[0] ?? BetType.TWO_BOTTOM)
               clearItems()
-              setIsTopBottom(false)
               setIsReverse(false)
             }}
             className={cn(
@@ -419,8 +407,7 @@ export default function BetPage() {
                             const first = group.betTypes[0]
                             setSelectedBetType(first)
                             setNumber('')
-                            if (BET_TYPE_DIGIT_COUNT[first] !== 2) {
-                              setIsTopBottom(false)
+                            if (BET_TYPE_DIGIT_COUNT[first] !== 2 && BET_TYPE_DIGIT_COUNT[first] !== 3) {
                               setIsReverse(false)
                             }
                           }}
@@ -453,8 +440,7 @@ export default function BetPage() {
                             onClick={() => {
                               setSelectedBetType(bt)
                               setNumber('')
-                              if (BET_TYPE_DIGIT_COUNT[bt] !== 2) {
-                                setIsTopBottom(false)
+                              if (BET_TYPE_DIGIT_COUNT[bt] !== 2 && BET_TYPE_DIGIT_COUNT[bt] !== 3) {
                                 setIsReverse(false)
                               }
                             }}
@@ -486,43 +472,44 @@ export default function BetPage() {
                           </button>
                         )
                       })}
+
+                      {canReverse && (
+                        <button
+                          type="button"
+                          disabled={isClosed}
+                          onClick={() => setIsReverse(!isReverse)}
+                          className={cn(
+                            'flex min-h-[52px] w-full overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors disabled:opacity-50',
+                            isReverse
+                              ? 'border-amber-500 bg-amber-500 text-white shadow-sm'
+                              : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50',
+                          )}
+                        >
+                          <span className="flex flex-1 items-center px-3 py-2 leading-tight">
+                            เลขกลับ
+                          </span>
+                          <span
+                            className={cn(
+                              'flex w-[4.25rem] shrink-0 items-center justify-center border-l px-2 py-2 font-mono text-sm tabular-nums',
+                              isReverse
+                                ? 'border-white/25 bg-amber-600 text-white'
+                                : 'border-blue-200 bg-blue-50 text-slate-800',
+                            )}
+                          >
+                            {isReverse ? '✓' : ''}
+                          </span>
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
               )}
 
-              {is2Digit && (
-                <div className="mb-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsTopBottom(!isTopBottom)}
-                    className={cn(
-                      'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
-                      isTopBottom
-                        ? 'border-green-600 bg-green-600 text-white'
-                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
-                    )}
-                  >
-                    บน+ล่าง {isTopBottom ? '✓' : ''}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsReverse(!isReverse)}
-                    className={cn(
-                      'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
-                      isReverse
-                        ? 'border-amber-500 bg-amber-500 text-white'
-                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
-                    )}
-                  >
-                    เลขกลับ {isReverse ? '✓' : ''}
-                  </button>
-                </div>
-              )}
-
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-slate-600">เลข ({maxLength} หลัก)</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-600">เลข ({maxLength} หลัก)</span>
+                  </div>
                   <input
                     value={number}
                     onChange={(e) => {

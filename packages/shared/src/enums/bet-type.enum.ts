@@ -1,4 +1,5 @@
 export enum BetType {
+  FOUR_TOP = '4_top',
   FIVE_TOP = '5_top',
   THREE_TOP = '3_top',
   THREE_TOD = '3_tod',
@@ -11,6 +12,7 @@ export enum BetType {
 }
 
 export const BET_TYPE_LABEL: Record<BetType, string> = {
+  [BetType.FOUR_TOP]: '4 ตัวบน',
   [BetType.FIVE_TOP]: '5 ตัวบน',
   [BetType.THREE_TOP]: '3 ตัวบน',
   [BetType.THREE_TOD]: '3 ตัวโต้ด',
@@ -23,6 +25,7 @@ export const BET_TYPE_LABEL: Record<BetType, string> = {
 }
 
 export const BET_TYPE_DIGIT_COUNT: Record<BetType, number> = {
+  [BetType.FOUR_TOP]: 4,
   [BetType.FIVE_TOP]: 5,
   [BetType.THREE_TOP]: 3,
   [BetType.THREE_TOD]: 3,
@@ -35,10 +38,11 @@ export const BET_TYPE_DIGIT_COUNT: Record<BetType, number> = {
 }
 
 /** จัดกลุ่มประเภทการแทงสำหรับ UI (สามตัว / ห้าตัว / สองตัว / เลขวิ่ง) */
-export type BetTypeGroupId = 'three_digit' | 'five_digit' | 'two_digit' | 'run'
+export type BetTypeGroupId = 'three_digit' | 'four_digit' | 'five_digit' | 'two_digit' | 'run'
 
 export const BET_TYPE_GROUP_LABEL: Record<BetTypeGroupId, string> = {
   three_digit: 'สามตัว',
+  four_digit: 'สี่ตัว',
   five_digit: 'ห้าตัว',
   two_digit: 'สองตัว',
   run: 'เลขวิ่ง',
@@ -53,12 +57,13 @@ const THREE_DIGIT = new Set<BetType>([
 
 function betTypeGroupId(betType: BetType): BetTypeGroupId {
   if (THREE_DIGIT.has(betType)) return 'three_digit'
+  if (betType === BetType.FOUR_TOP) return 'four_digit'
   if (betType === BetType.FIVE_TOP) return 'five_digit'
   if (betType === BetType.TWO_TOP || betType === BetType.TWO_BOTTOM) return 'two_digit'
   return 'run'
 }
 
-const GROUP_ORDER: BetTypeGroupId[] = ['three_digit', 'five_digit', 'two_digit', 'run']
+const GROUP_ORDER: BetTypeGroupId[] = ['three_digit', 'four_digit', 'five_digit', 'two_digit', 'run']
 
 /** แบ่งตามลำดับที่ส่งเข้ามา (มักมาจาก LOTTERY_TYPE_BET_TYPES) — คืนเฉพาะกลุ่มที่มีประเภทจริง */
 export function groupBetTypesForUi(allowedInOrder: BetType[]): {
@@ -68,6 +73,7 @@ export function groupBetTypesForUi(allowedInOrder: BetType[]): {
 }[] {
   const buckets: Record<BetTypeGroupId, BetType[]> = {
     three_digit: [],
+    four_digit: [],
     five_digit: [],
     two_digit: [],
     run: [],
@@ -94,10 +100,6 @@ export const LOTTERY_TYPE_BET_TYPES: Record<string, BetType[]> = {
     BetType.RUN_BOTTOM,
   ],
   LAO_PATTHANA: [
-    BetType.THREE_TOP,
-    BetType.THREE_TOD,
-    BetType.THREE_FRONT,
-    BetType.THREE_BACK,
     BetType.TWO_TOP,
     BetType.TWO_BOTTOM,
     BetType.RUN_TOP,
@@ -105,6 +107,15 @@ export const LOTTERY_TYPE_BET_TYPES: Record<string, BetType[]> = {
   ],
   LAO_SUPER: [
     BetType.FIVE_TOP,
+    BetType.TWO_TOP,
+    BetType.TWO_BOTTOM,
+    BetType.RUN_TOP,
+    BetType.RUN_BOTTOM,
+  ],
+  LAO: [
+    BetType.FOUR_TOP,
+    BetType.THREE_TOP,
+    BetType.THREE_TOD,
     BetType.TWO_TOP,
     BetType.TWO_BOTTOM,
     BetType.RUN_TOP,

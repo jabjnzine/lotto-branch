@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import { forwardRef, Inject } from '@nestjs/common'
 import { LotteryRound } from '../entities/lottery-round.entity'
 import { LotteryResult } from '../entities/lottery-result.entity'
 import { Bet } from '../entities/bet.entity'
+import { BetsService } from '../bets/bets.service'
 import { RoundStatus, BetStatus } from '@lotto/shared'
 
 @Injectable()
@@ -17,6 +19,7 @@ export class RoundsService {
     @InjectRepository(LotteryRound) private readonly roundsRepo: Repository<LotteryRound>,
     @InjectRepository(LotteryResult) private readonly resultsRepo: Repository<LotteryResult>,
     @InjectRepository(Bet) private readonly betsRepo: Repository<Bet>,
+    @Inject(forwardRef(() => BetsService)) private readonly betsService: BetsService,
   ) {}
 
   findAll(lotteryTypeId?: string, status?: RoundStatus) {
@@ -84,16 +87,22 @@ export class RoundsService {
     }
 
     const existing = await this.resultsRepo.findOne({ where: { round_id: roundId } })
+    let saved: LotteryResult
     if (existing) {
       Object.assign(existing, dto)
-      const saved = await this.resultsRepo.save(existing)
-      await this.updateStatus(roundId, RoundStatus.RESULTED)
-      return saved
+      saved = await this.resultsRepo.save(existing)
+    } else {
+      const result = this.resultsRepo.create({ ...dto, round_id: roundId })
+      saved = await this.resultsRepo.save(result)
     }
 
-    const result = this.resultsRepo.create({ ...dto, round_id: roundId })
-    const saved = await this.resultsRepo.save(result)
     await this.updateStatus(roundId, RoundStatus.RESULTED)
+
+    // คำนวณถูก-ผิดทุกบิลในงวดนี้
+    this.betsService.calculateWinners(roundId).catch((err) => {
+      console.error('คำนวณถูก-ผิดล้มเหลว:', err)
+    })
+
     return saved
   }
 }

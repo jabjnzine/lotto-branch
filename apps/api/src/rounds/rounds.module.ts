@@ -7,10 +7,12 @@ import { Bet } from '../entities/bet.entity'
 import { RoundsService } from './rounds.service'
 import { RoundsController } from './rounds.controller'
 import { RoundsSchedulerService } from './rounds-scheduler.service'
+import { ThaiLottoFetcherService } from './thai-lotto-fetcher.service'
+import { BetsModule } from '../bets/bets.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([LotteryRound, LotteryResult, LotteryType, Bet])],
-  providers: [RoundsService, RoundsSchedulerService],
+  imports: [TypeOrmModule.forFeature([LotteryRound, LotteryResult, LotteryType, Bet]), BetsModule],
+  providers: [RoundsService, RoundsSchedulerService, ThaiLottoFetcherService],
   controllers: [RoundsController],
   exports: [RoundsService],
 })

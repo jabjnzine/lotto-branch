@@ -1,14 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
 import { useRounds } from '@/lib/hooks/useRounds'
 import { useIncomeSummary } from '@/lib/hooks/useIncome'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatCurrency, formatThaiDate } from '@/lib/utils'
 import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+
+const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'destructive' | 'warning' | 'default' }> = {
+  open: { label: 'เปิดรับ', variant: 'success' },
+  closed: { label: 'ปิดรับ', variant: 'warning' },
+  resulted: { label: 'ออกผล', variant: 'default' },
+  cancelled: { label: 'ยกเลิก', variant: 'destructive' },
+}
 
 export default function IncomePage() {
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null)
@@ -19,6 +27,13 @@ export default function IncomePage() {
   const { data: summary, isLoading: summaryLoading } = useIncomeSummary(selectedRoundId)
 
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
+
+  const sortedRounds = useMemo(() => {
+    if (!rounds) return []
+    return [...rounds].sort((a, b) => {
+      return new Date(b.draw_date).getTime() - new Date(a.draw_date).getTime()
+    })
+  }, [rounds])
 
   const profit = summary ? parseFloat(summary.profit) : 0
 
@@ -53,17 +68,26 @@ export default function IncomePage() {
               <CardTitle className="text-xs text-slate-500">งวดที่ออกผลแล้ว</CardTitle>
             </CardHeader>
             <CardContent className="p-0 max-h-80 overflow-y-auto">
-              {rounds?.map((round) => (
-                <button
-                  key={round.id}
-                  onClick={() => setSelectedRoundId(round.id)}
-                  className={`w-full text-left px-3 py-2.5 border-b border-slate-50 text-sm hover:bg-slate-50 ${
-                    selectedRoundId === round.id ? 'bg-blue-50 text-blue-700 font-medium' : ''
-                  }`}
-                >
-                  {formatThaiDate(round.draw_date)}
-                </button>
-              ))}
+              {sortedRounds.map((round) => {
+                const rStatus = roundStatusBadge[round.status] ?? { label: round.status, variant: 'default' as const }
+                return (
+                  <button
+                    key={round.id}
+                    onClick={() => setSelectedRoundId(round.id)}
+                    className={`w-full text-left px-3 py-2.5 border-b border-slate-50 text-sm hover:bg-slate-50 ${
+                      selectedRoundId === round.id ? 'bg-blue-50 text-blue-700 font-medium border-l-2 border-l-blue-500' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{formatThaiDate(round.draw_date)}</span>
+                      <Badge variant={rStatus.variant} className="text-[10px] px-1.5 py-0">
+                        {rStatus.label}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">{round.lottery_type?.name}</p>
+                  </button>
+                )
+              })}
               {(!rounds || rounds.length === 0) && (
                 <p className="text-xs text-slate-400 text-center py-4">ไม่มีงวด</p>
               )}

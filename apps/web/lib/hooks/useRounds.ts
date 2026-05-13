@@ -46,6 +46,17 @@ export function useCancelRound() {
   })
 }
 
+export function useFetchThaiResult() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post('/rounds/fetch-thai').then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['rounds'] })
+      qc.invalidateQueries({ queryKey: ['result'] })
+    },
+  })
+}
+
 export function useGenerateRounds() {
   const qc = useQueryClient()
   return useMutation({

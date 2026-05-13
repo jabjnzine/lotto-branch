@@ -28,6 +28,22 @@ export class RoundsSchedulerService implements OnModuleInit {
     await this.generateUpcomingRounds()
   }
 
+  @Cron('*/5 * * * *', { timeZone: 'Asia/Bangkok' })
+  async autoCloseRounds() {
+    const now = dayjs().tz('Asia/Bangkok').toDate()
+    const result = await this.roundsRepo
+      .createQueryBuilder()
+      .update(LotteryRound)
+      .set({ status: RoundStatus.CLOSED })
+      .where('status = :status', { status: RoundStatus.OPEN })
+      .andWhere('close_at <= :now', { now })
+      .execute()
+
+    if (result.affected) {
+      this.logger.log(`ปิดงวดอัตโนมัติ ${result.affected} งวด`)
+    }
+  }
+
   @Cron('0 0 * * *', { timeZone: 'Asia/Bangkok' })
   async generateUpcomingRounds() {
     this.logger.log('กำลังสร้างงวดล่วงหน้า 7 วัน...')
