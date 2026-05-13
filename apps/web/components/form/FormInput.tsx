@@ -22,7 +22,7 @@ export function FormInput({ name, label, placeholder, disabled, type = 'text', c
         type={type}
         placeholder={placeholder}
         disabled={disabled}
-        className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-10 w-full rounded-md border border-sky-200 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
       />
       {error && (
         <span className="text-xs text-red-500">{error.message as string}</span>

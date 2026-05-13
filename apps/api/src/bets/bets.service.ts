@@ -267,6 +267,26 @@ export class BetsService {
     this.logger.log(`คำนวณเสร็จ: ${bets.length} บิล`)
   }
 
+  async getTodaySummary() {
+    const today = new Date().toISOString().slice(0, 10)
+
+    const result = await this.betsRepo
+      .createQueryBuilder('b')
+      .innerJoin('b.round', 'r')
+      .where('r.draw_date = :today', { today })
+      .andWhere('b.status != :cancelled', { cancelled: BetStatus.CANCELLED })
+      .select([
+        'COUNT(b.id) AS "billCount"',
+        'COALESCE(SUM(b.total_amount), 0) AS "totalAmount"',
+      ])
+      .getRawOne<{ billCount: string; totalAmount: string }>()
+
+    return {
+      billCount: Number(result?.billCount ?? 0),
+      totalAmount: result?.totalAmount ?? '0',
+    }
+  }
+
   async cancel(id: string) {
     const bet = await this.findOne(id)
     if (bet.status === BetStatus.CANCELLED) {

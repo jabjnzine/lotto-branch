@@ -27,6 +27,11 @@ export class BetsController {
     return this.service.findAll(roundId, page ? +page : 1, pageSize ? +pageSize : 20)
   }
 
+  @Get('today-summary')
+  getTodaySummary() {
+    return this.service.getTodaySummary()
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id)

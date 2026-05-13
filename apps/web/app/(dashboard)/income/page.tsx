@@ -11,7 +11,7 @@ import { cn, formatCurrency, formatThaiDate } from '@/lib/utils'
 import { BET_TYPE_LABEL, BetType } from '@lotto/shared'
 import { TrendingUp, TrendingDown, DollarSign, Target, BarChart3 } from 'lucide-react'
 
-const POS_BLUE = '#007bff'
+const POS_BLUE = '#0284c7'
 
 const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'destructive' | 'warning' | 'default' }> = {
   open: { label: 'เปิดรับ', variant: 'success' },
@@ -44,7 +44,7 @@ export default function IncomePage() {
       <PageHeader title="รายได้" description="สรุปกำไร-ขาดทุนแยกตามงวด" />
 
       {/* ประเภทหวย */}
-      <div className="flex flex-wrap gap-2 rounded-lg border border-blue-200 bg-white p-3 shadow-sm">
+      <div className="flex flex-wrap gap-2 rounded-lg border border-sky-200 bg-white p-3 shadow-sm">
         {lotteryTypes?.map((lt) => (
           <button
             key={lt.id}
@@ -56,7 +56,7 @@ export default function IncomePage() {
             className={cn(
               'rounded-full px-4 py-2 text-sm font-medium transition-colors',
               selectedTypeId === lt.id
-                ? 'bg-[#007bff] text-white shadow-sm'
+                ? 'bg-[#0284c7] text-white shadow-sm'
                 : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
             )}
           >
@@ -66,8 +66,8 @@ export default function IncomePage() {
       </div>
 
       {!selectedTypeId && (
-        <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/40 py-16 text-center text-slate-500">
-          <BarChart3 className="h-10 w-10 mx-auto mb-3 text-blue-300" />
+        <div className="rounded-xl border border-dashed border-sky-200 bg-sky-50/40 py-16 text-center text-slate-500">
+          <BarChart3 className="h-10 w-10 mx-auto mb-3 text-sky-300" />
           <p className="text-lg">เลือกประเภทหวยเพื่อดูรายได้</p>
         </div>
       )}
@@ -76,7 +76,7 @@ export default function IncomePage() {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
           {/* Sidebar */}
           <div className="lg:col-span-3">
-            <div className="overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
               <div
                 className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white"
                 style={{ backgroundColor: POS_BLUE }}
@@ -93,7 +93,7 @@ export default function IncomePage() {
                       onClick={() => setSelectedRoundId(round.id)}
                       className={cn(
                         'w-full text-left px-4 py-3 border-b border-slate-100 transition-colors hover:bg-slate-50',
-                        selectedRoundId === round.id && 'bg-blue-50 border-l-2 border-l-[#007bff]',
+                        selectedRoundId === round.id && 'bg-sky-50 border-l-2 border-l-[#0284c7]',
                       )}
                     >
                       <div className="flex items-center justify-between">
@@ -121,10 +121,10 @@ export default function IncomePage() {
               <>
                 {/* KPIs */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
+                  <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                        <DollarSign className="h-5 w-5 text-blue-600" />
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
+                        <DollarSign className="h-5 w-5 text-sky-600" />
                       </div>
                       <div>
                         <p className="text-xs text-slate-400">ยอดรับรวม</p>
@@ -134,7 +134,7 @@ export default function IncomePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
+                  <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50">
                         <TrendingDown className="h-5 w-5 text-red-500" />
@@ -147,7 +147,7 @@ export default function IncomePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
+                  <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
@@ -173,7 +173,7 @@ export default function IncomePage() {
 
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                   {/* By Lottery Type */}
-                  <div className="overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
+                  <div className="overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
                     <div
                       className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white"
                       style={{ backgroundColor: POS_BLUE }}
@@ -204,7 +204,7 @@ export default function IncomePage() {
                   </div>
 
                   {/* By Bet Type */}
-                  <div className="overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
+                  <div className="overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
                     <div
                       className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white"
                       style={{ backgroundColor: POS_BLUE }}
@@ -244,8 +244,8 @@ export default function IncomePage() {
             )}
 
             {!selectedRoundId && !summaryLoading && (
-              <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/40 py-16 text-center text-slate-500">
-                <Target className="h-10 w-10 mx-auto mb-3 text-blue-300" />
+              <div className="rounded-xl border border-dashed border-sky-200 bg-sky-50/40 py-16 text-center text-slate-500">
+                <Target className="h-10 w-10 mx-auto mb-3 text-sky-300" />
                 <p className="text-lg">เลือกงวดเพื่อดูรายงานรายได้</p>
               </div>
             )}

@@ -38,19 +38,43 @@ export class ThaiLottoFetcherService {
     private readonly betsService: BetsService,
   ) {}
 
-  /** Cron: ทุกวันที่ 1 และ 16 ของเดือน เวลา 15:30–17:30 น. (เช็คทุก 5 นาที) */
-  @Cron('*/5 15-17 1,16 * *', { timeZone: 'Asia/Bangkok' })
+  /** Cron: ทุกวันที่ 1 และ 16 ของเดือน เวลา 15:00–22:00 น. (เช็คทุก 5 นาที) */
+  @Cron('*/5 15-21 1,16 * *', { timeZone: 'Asia/Bangkok' })
   async autoFetchOnDrawDays() {
     this.logger.log('Cron: ตรวจสอบผลหวยวันหวยออก...')
     await this.fetchLatestAndSave()
   }
 
-  async fetchLatestAndSave(): Promise<{ message: string; roundId?: string }> {
-    this.logger.log('กำลังดึงผลหวยรัฐบาลจาก sanook.com...')
+  /** Fallback: เช้าวันถัดไป (วันที่ 2, 17) เวลา 6:00-8:00 น. ดักผลที่มาช้า */
+  @Cron('*/10 6-8 2,17 * *', { timeZone: 'Asia/Bangkok' })
+  async catchLateThaiResults() {
+    this.logger.log('Cron: ดักผลหวยรัฐบาลที่มาช้า...')
+    await this.fetchLatestAndSave()
+  }
 
-    const today = dayjs().tz('Asia/Bangkok')
-    const buddhistYear = today.year() + 543
-    const url = `https://news.sanook.com/lotto/check/${today.format('DDMM')}${buddhistYear}/`
+  async fetchLatestAndSave(): Promise<{ message: string; roundId?: string }> {
+    this.logger.log('กำลังตรวจสอบผลหวยรัฐบาล...')
+
+    const today = dayjs().tz('Asia/Bangkok').format('YYYY-MM-DD')
+
+    // เช็ค DB ก่อน — ถ้ามีผลแล้ว ไม่ต้อง scrape
+    const hasOfficial = await this.resultsRepo
+      .createQueryBuilder('res')
+      .innerJoin('res.round', 'r')
+      .innerJoin('r.lottery_type', 'lt')
+      .where('lt.code = :code', { code: 'TH' })
+      .andWhere('r.draw_date = :drawDate', { drawDate: today })
+      .andWhere('res.is_official = true')
+      .getCount()
+
+    if (hasOfficial > 0) {
+      this.logger.log(`ผลหวยรัฐบาลวันที่ ${today} มีในระบบแล้ว ข้าม`)
+      return { message: `ผลหวยรัฐบาลวันที่ ${today} มีในระบบแล้ว` }
+    }
+
+    const now = dayjs().tz('Asia/Bangkok')
+    const buddhistYear = now.year() + 543
+    const url = `https://news.sanook.com/lotto/check/${now.format('DDMM')}${buddhistYear}/`
 
     let lottoData: LottoData
     try {
@@ -128,7 +152,8 @@ export class ThaiLottoFetcherService {
     const drawDate = this.parseThaiDate(dateMatch[1])
 
     // รางวัลที่ 1 — <strong class="lotto__number lotto__number--first">
-    const firstPrize = $('.lotto__number--first').first().text().trim()
+    const firstPrizeRaw = $('.lotto__number--first').first().text().trim()
+    const firstPrize = /^\d{6}$/.test(firstPrizeRaw) ? firstPrizeRaw : ''
 
     // วนทุก .lottocheck__column หาเลขตาม label
     const threeFront: string[] = []

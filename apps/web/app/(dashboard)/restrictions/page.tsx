@@ -22,7 +22,7 @@ import {
 import { cn, formatThaiDate } from '@/lib/utils'
 import { Trash2, Plus, RefreshCw } from 'lucide-react'
 
-const POS_BLUE = '#007bff'
+const POS_BLUE = '#0284c7'
 
 const restrictionTypeLabel: Record<string, { label: string; variant: 'destructive' | 'warning' | 'default' }> = {
   closed: { label: 'ปิดรับ', variant: 'destructive' },
@@ -104,7 +104,7 @@ export default function RestrictionsPage() {
       </PageHeader>
 
       {/* ประเภทหวย */}
-      <div className="flex flex-wrap gap-2 rounded-lg border border-blue-200 bg-white p-3 shadow-sm">
+      <div className="flex flex-wrap gap-2 rounded-lg border border-sky-200 bg-white p-3 shadow-sm">
         {lotteryTypes?.map((lt) => (
           <button
             key={lt.id}
@@ -117,7 +117,7 @@ export default function RestrictionsPage() {
             className={cn(
               'rounded-full px-4 py-2 text-sm font-medium transition-colors',
               selectedTypeId === lt.id
-                ? 'bg-[#007bff] text-white shadow-sm'
+                ? 'bg-[#0284c7] text-white shadow-sm'
                 : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
             )}
           >
@@ -127,7 +127,7 @@ export default function RestrictionsPage() {
       </div>
 
       {!selectedTypeId && (
-        <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/40 py-16 text-center text-slate-500">
+        <div className="rounded-xl border border-dashed border-sky-200 bg-sky-50/40 py-16 text-center text-slate-500">
           <p className="text-lg">เลือกประเภทหวยเพื่อเริ่มจัดการเลขอั้น</p>
         </div>
       )}
@@ -135,7 +135,7 @@ export default function RestrictionsPage() {
       {selectedTypeId && (
         <>
           {/* แถบงวด + countdown */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-200 bg-white px-4 py-3 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-sky-200 bg-white px-4 py-3 shadow-sm">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">งวด</p>
               <p className="text-sm font-semibold text-slate-800">
@@ -147,7 +147,7 @@ export default function RestrictionsPage() {
             </div>
             <div className="text-right">
               <p className="text-xs text-slate-500">ปิดรับใน</p>
-              <div className="text-lg font-semibold tabular-nums text-[#007bff]">
+              <div className="text-lg font-semibold tabular-nums text-[#0284c7]">
                 <Countdown closeAt={currentRound?.close_at} />
               </div>
             </div>
@@ -156,14 +156,14 @@ export default function RestrictionsPage() {
           {currentRound && (
             <>
               {/* เพิ่มเลขอั้น */}
-              <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 border-b border-blue-100 pb-2 text-sm font-semibold text-slate-800">
+              <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                <h3 className="mb-3 border-b border-sky-100 pb-2 text-sm font-semibold text-slate-800">
                   เพิ่มเลขอั้น
                 </h3>
 
                 <p className="mb-2 text-xs font-medium text-slate-600">ประเภทการแทง</p>
                 {betTypeGroups.length > 0 && (
-                  <div className="mb-3 rounded-xl border border-blue-200 bg-white p-3 shadow-sm">
+                  <div className="mb-3 rounded-xl border border-sky-200 bg-white p-3 shadow-sm">
                     <div className="flex gap-2">
                       {betTypeGroups.map((group) => {
                         const tabOn = resolvedTabGroupId === group.groupId
@@ -179,7 +179,7 @@ export default function RestrictionsPage() {
                             className={cn(
                               'flex-1 rounded-lg border py-2.5 text-center text-sm font-semibold transition-colors',
                               tabOn
-                                ? 'border-[#007bff] bg-[#007bff] text-white shadow-sm'
+                                ? 'border-[#0284c7] bg-[#0284c7] text-white shadow-sm'
                                 : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
                             )}
                           >
@@ -205,7 +205,7 @@ export default function RestrictionsPage() {
                               className={cn(
                                 'flex min-h-[52px] w-full overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors disabled:opacity-50',
                                 isSel
-                                  ? 'border-[#007bff] bg-[#007bff] text-white shadow-sm'
+                                  ? 'border-[#0284c7] bg-[#0284c7] text-white shadow-sm'
                                   : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50',
                               )}
                             >
@@ -221,8 +221,8 @@ export default function RestrictionsPage() {
                                 className={cn(
                                   'flex w-[4.25rem] shrink-0 items-center justify-center border-l px-2 py-2 font-mono text-sm',
                                   isSel
-                                    ? 'border-white/25 bg-[#0062cc] text-white'
-                                    : 'border-blue-200 bg-blue-50 text-slate-800',
+                                    ? 'border-white/25 bg-[#0369a1] text-white'
+                                    : 'border-sky-200 bg-sky-50 text-slate-800',
                                 )}
                               >
                                 {BET_TYPE_DIGIT_COUNT[bt]} หลัก
@@ -270,7 +270,7 @@ export default function RestrictionsPage() {
                       maxLength={maxLength}
                       placeholder={'0'.repeat(maxLength)}
                       disabled={isClosed}
-                      className="h-11 rounded-md border border-blue-200 px-3 text-center font-mono text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-[#007bff]/40 disabled:bg-slate-50"
+                      className="h-11 rounded-md border border-sky-200 px-3 text-center font-mono text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 disabled:bg-slate-50"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
@@ -283,7 +283,7 @@ export default function RestrictionsPage() {
                       inputMode="numeric"
                       placeholder={restrictionType === RestrictionType.LIMITED ? 'วงเงินสูงสุด' : 'ไม่ระบุ'}
                       disabled={isClosed || restrictionType !== RestrictionType.LIMITED}
-                      className="h-11 rounded-md border border-blue-200 px-3 text-center font-mono text-lg focus:outline-none focus:ring-2 focus:ring-[#007bff]/40 disabled:bg-slate-100 disabled:text-slate-400"
+                      className="h-11 rounded-md border border-sky-200 px-3 text-center font-mono text-lg focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 disabled:bg-slate-100 disabled:text-slate-400"
                     />
                   </label>
                 </div>
@@ -292,7 +292,7 @@ export default function RestrictionsPage() {
                   type="button"
                   onClick={handleAdd}
                   disabled={isClosed || !number || createRestriction.isPending}
-                  className="mt-4 h-11 w-full gap-2 bg-[#007bff] text-base font-semibold hover:bg-[#0069d9]"
+                  className="mt-4 h-11 w-full gap-2 bg-[#0284c7] text-base font-semibold hover:bg-[#0369a1]"
                   size="lg"
                 >
                   <Plus className="h-5 w-5" />
@@ -301,7 +301,7 @@ export default function RestrictionsPage() {
               </div>
 
               {/* รายการเลขอั้น */}
-              <div className="overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
+              <div className="overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
                 <div
                   className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm font-semibold text-white"
                   style={{ backgroundColor: POS_BLUE }}
@@ -344,7 +344,7 @@ export default function RestrictionsPage() {
                           </div>
                           <button
                             onClick={() => deleteRestriction.mutate(r.id)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#007bff] transition-colors hover:bg-blue-50 hover:text-red-600"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#0284c7] transition-colors hover:bg-sky-50 hover:text-red-600"
                             aria-label="ลบเลขอั้น"
                           >
                             <Trash2 className="h-4 w-4" />

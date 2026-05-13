@@ -2,6 +2,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../api'
 import { CreateBetDto } from '@lotto/shared'
 
+export interface TodayBetsSummary {
+  billCount: number
+  totalAmount: string
+}
+
+export function useTodayBetsSummary() {
+  return useQuery<TodayBetsSummary>({
+    queryKey: ['bets', 'today-summary'],
+    queryFn: () => api.get('/bets/today-summary').then((r) => r.data),
+  })
+}
+
 export function useBets(roundId: string | null, page = 1, pageSize = 20) {
   return useQuery({
     queryKey: ['bets', roundId, page, pageSize],

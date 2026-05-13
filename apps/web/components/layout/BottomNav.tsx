@@ -17,7 +17,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-50">
+    <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-sky-100 z-50">
       <div className="flex">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
@@ -27,7 +27,7 @@ export function BottomNav() {
               href={href}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] text-xs font-medium transition-colors',
-                active ? 'text-blue-600' : 'text-slate-500',
+                active ? 'text-sky-600' : 'text-slate-500',
               )}
             >
               <Icon className="h-5 w-5" />

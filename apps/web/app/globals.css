@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1d4ed8;
+  --color-primary: #0284c7;
   --color-primary-foreground: #ffffff;
   --color-secondary: #64748b;
   --color-secondary-foreground: #ffffff;
-  --color-background: #f8fafc;
+  --color-background: #f0f9ff;
   --color-foreground: #0f172a;
   --color-card: #ffffff;
   --color-card-foreground: #0f172a;
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
-  --color-ring: #1d4ed8;
-  --color-muted: #f1f5f9;
+  --color-border: #bae6fd;
+  --color-input: #bae6fd;
+  --color-ring: #0ea5e9;
+  --color-muted: #f0f9ff;
   --color-muted-foreground: #64748b;
-  --color-accent: #f1f5f9;
-  --color-accent-foreground: #0f172a;
+  --color-accent: #e0f2fe;
+  --color-accent-foreground: #0c4a6e;
   --color-destructive: #dc2626;
   --color-destructive-foreground: #ffffff;
   --color-success: #16a34a;
@@ -29,4 +29,43 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoom-in-95 {
+  from { transform: scale(0.95); }
+  to { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@utility animate-in {
+  animation-duration: 500ms;
+  animation-fill-mode: both;
+}
+
+@utility fade-in {
+  animation-name: fade-in;
+}
+
+@utility zoom-in-95 {
+  animation-name: zoom-in-95;
+}
+
+@utility animate-shake {
+  animation: shake 400ms ease-in-out;
+}
+
+@utility duration-500 {
+  animation-duration: 500ms;
 }

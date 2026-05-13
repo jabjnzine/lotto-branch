@@ -12,6 +12,7 @@ import {
   Home,
   Settings,
   LogOut,
+  Clover,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
@@ -39,11 +40,18 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="hidden lg:flex lg:flex-col lg:w-60 lg:min-h-screen bg-white border-r border-slate-200">
+    <aside className="hidden lg:flex lg:flex-col lg:w-60 lg:min-h-screen bg-white border-r border-sky-100">
       {/* Logo */}
-      <div className="p-6 border-b border-slate-100">
-        <h2 className="text-xl font-bold text-blue-600">🎯 ระบบหวย</h2>
-        <p className="text-xs text-slate-400 mt-0.5">Back Office</p>
+      <div className="p-5 border-b border-sky-100">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 ring-1 ring-sky-100">
+            <Clover className="h-5 w-5 text-sky-600" strokeWidth={1.5} />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">ระบบหวย</h2>
+            <p className="text-xs text-sky-500 font-medium">Back Office</p>
+          </div>
+        </div>
       </div>
 
       {/* Nav */}
@@ -57,8 +65,8 @@ export function Sidebar() {
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors',
                 active
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                  ? 'bg-sky-50 text-sky-700'
+                  : 'text-slate-600 hover:bg-sky-50 hover:text-slate-900',
               )}
             >
               <Icon className="h-4 w-4 flex-shrink-0" />
@@ -69,9 +77,9 @@ export function Sidebar() {
       </nav>
 
       {/* User */}
-      <div className="p-4 border-t border-slate-100">
+      <div className="p-4 border-t border-sky-100">
         <div className="flex items-center gap-3 px-3 py-2 mb-2">
-          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-sm font-bold">
+          <div className="h-8 w-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-700 text-sm font-bold">
             {user?.name?.[0] ?? 'A'}
           </div>
           <div className="flex-1 min-w-0">

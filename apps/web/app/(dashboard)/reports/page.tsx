@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
 import { useRounds, type LotteryRound } from '@/lib/hooks/useRounds'
 import { useBets } from '@/lib/hooks/useBets'
@@ -73,7 +73,7 @@ export default function ReportsPage() {
       </PageHeader>
 
       {/* Type Selector */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 rounded-lg border border-sky-200 bg-white p-3 shadow-sm">
         {lotteryTypes?.map((lt) => (
           <button
             key={lt.id}
@@ -84,8 +84,8 @@ export default function ReportsPage() {
             }}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedTypeId === lt.id
-                ? 'bg-blue-600 text-white'
-                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                ? 'bg-sky-600 text-white'
+                : 'bg-white border border-sky-200 text-slate-700 hover:bg-sky-50'
             }`}
           >
             {lt.name}
@@ -113,7 +113,7 @@ export default function ReportsPage() {
                     }}
                     className={`w-full text-left px-3 py-2.5 border-b border-slate-50 text-sm hover:bg-slate-50 transition-colors ${
                       selectedRoundId === round.id
-                        ? 'bg-blue-50 text-blue-700 font-medium border-l-2 border-l-blue-500'
+                        ? 'bg-sky-50 text-sky-700 font-medium border-l-2 border-l-sky-500'
                         : ''
                     }`}
                   >
@@ -147,24 +147,27 @@ export default function ReportsPage() {
               <>
                 {/* Round Summary */}
                 {selectedRound && (
-                  <Card className="mb-4">
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-800">
-                          งวด {formatThaiDate(selectedRound.draw_date)}
-                        </p>
-                        <p className="text-xs text-slate-400 mt-0.5">
-                          {selectedRound.lottery_type?.name}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-slate-400">รวมยอดรับ</p>
-                        <p className="text-lg font-bold text-blue-600 tabular-nums">
-                          {formatCurrency(totalAmount)} บาท
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                      <p className="text-xs text-slate-400">งวด</p>
+                      <p className="text-sm font-semibold text-slate-900 mt-0.5">
+                        {formatThaiDate(selectedRound.draw_date)}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5">{selectedRound.lottery_type?.name}</p>
+                    </div>
+                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                      <p className="text-xs text-slate-400">จำนวนบิล</p>
+                      <p className="text-xl font-bold text-slate-900 tabular-nums mt-0.5">
+                        {betsData.total.toLocaleString()} <span className="text-sm font-normal text-slate-500">รายการ</span>
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                      <p className="text-xs text-slate-400">ยอดรับรวม</p>
+                      <p className="text-xl font-bold text-sky-600 tabular-nums mt-0.5">
+                        {formatCurrency(totalAmount)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                      </p>
+                    </div>
+                  </div>
                 )}
 
                 <Card>
@@ -182,7 +185,7 @@ export default function ReportsPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-slate-200 bg-slate-50">
+                          <tr className="border-b border-sky-200 bg-sky-50">
                             <th className="w-8 px-3 py-2.5" />
                             <th className="text-left px-3 py-2.5 text-xs text-slate-500 font-medium">เวลา</th>
                             <th className="text-left px-3 py-2.5 text-xs text-slate-500 font-medium">คนซื้อ</th>
@@ -210,9 +213,8 @@ export default function ReportsPage() {
                             const status = statusLabel[bet.status] ?? { label: bet.status, variant: 'default' as const }
                             const itemCount = bet.items?.length ?? 0
                             return (
-                              <>
+                              <React.Fragment key={bet.id}>
                                 <tr
-                                  key={bet.id}
                                   className="hover:bg-slate-50 cursor-pointer transition-colors"
                                   onClick={() => setExpandedBetId(isExpanded ? null : bet.id)}
                                 >
@@ -290,7 +292,7 @@ export default function ReportsPage() {
                                     </td>
                                   </tr>
                                 )}
-                              </>
+                              </React.Fragment>
                             )
                           })}
                         </tbody>

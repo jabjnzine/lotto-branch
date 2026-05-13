@@ -32,19 +32,43 @@ export class LaoLottoFetcherService {
     private readonly betsService: BetsService,
   ) {}
 
-  /** Cron: ทุกวัน หลัง 20:00 น. (เช็คทุก 5 นาที ถึง 22:00) */
+  /** Cron: ทุกวัน หลัง 20:00 น. (เช็คทุก 5 นาที ถึง 23:00) */
   @Cron('*/5 20-22 * * *', { timeZone: 'Asia/Bangkok' })
   async autoFetchDaily() {
     this.logger.log('Cron: ตรวจสอบผลหวยลาว...')
     await this.fetchLatestAndSave()
   }
 
-  async fetchLatestAndSave(): Promise<{ message: string; roundId?: string }> {
-    this.logger.log('กำลังดึงผลหวยลาวจาก sanook.com...')
+  /** Fallback: เช้ามืดวันถัดไป 6:00-8:00 น. ดักผลที่มาช้ากว่ากำหนด */
+  @Cron('*/10 6-8 * * *', { timeZone: 'Asia/Bangkok' })
+  async catchLateLaoResults() {
+    this.logger.log('Cron: ดักผลหวยลาวที่มาช้า...')
+    await this.fetchLatestAndSave()
+  }
 
-    const today = dayjs().tz('Asia/Bangkok')
-    const buddhistYear = today.year() + 543
-    const url = `https://www.sanook.com/news/laolotto/${today.format('DDMM')}${buddhistYear}/`
+  async fetchLatestAndSave(): Promise<{ message: string; roundId?: string }> {
+    this.logger.log('กำลังตรวจสอบผลหวยลาว...')
+
+    const today = dayjs().tz('Asia/Bangkok').format('YYYY-MM-DD')
+
+    // เช็ค DB ก่อน — ถ้ามีผลแล้ว ไม่ต้อง scrape
+    const existingResults = await this.resultsRepo
+      .createQueryBuilder('res')
+      .innerJoin('res.round', 'r')
+      .innerJoin('r.lottery_type', 'lt')
+      .where('lt.code IN (:...codes)', { codes: ['LAO', 'LAO_PATTHANA'] })
+      .andWhere('r.draw_date = :drawDate', { drawDate: today })
+      .andWhere('res.is_official = true')
+      .getCount()
+
+    if (existingResults > 0) {
+      this.logger.log(`ผลหวยลาววันที่ ${today} มีในระบบแล้ว ข้าม`)
+      return { message: `ผลหวยลาววันที่ ${today} มีในระบบแล้ว` }
+    }
+
+    const now = dayjs().tz('Asia/Bangkok')
+    const buddhistYear = now.year() + 543
+    const url = `https://www.sanook.com/news/laolotto/${now.format('DDMM')}${buddhistYear}/`
 
     let lottoData: LaoLottoData
     try {
@@ -158,18 +182,21 @@ export class LaoLottoFetcherService {
 
       if (tag === 'h2' && text === 'เลขท้าย 4 ตัว') {
         // h2 → parent (th) → next sibling (td) → strong
-        firstPrize = $el.parent().next().find('strong').first().text().trim()
+        const raw = $el.parent().next().find('strong').first().text().trim()
+        if (/^\d{4}$/.test(raw)) firstPrize = raw
         return
       }
 
       if (tag === 'h3' && text === 'เลขท้าย 3 ตัว') {
         // h3 → next sibling คือ strong
-        threeTop = $el.next('strong').text().trim()
+        const raw = $el.next('strong').text().trim()
+        if (/^\d{3}$/.test(raw)) threeTop = raw
         return
       }
 
       if (tag === 'h3' && text === 'เลขท้าย 2 ตัว') {
-        twoLast = $el.next('strong').text().trim()
+        const raw = $el.next('strong').text().trim()
+        if (/^\d{2}$/.test(raw)) twoLast = raw
         return
       }
 
@@ -181,6 +208,14 @@ export class LaoLottoFetcherService {
         })
       }
     })
+
+    // Fallback: derive from firstPrize if not found on page
+    if (!threeTop && firstPrize.length === 4) {
+      threeTop = firstPrize.slice(-3)
+    }
+    if (!twoLast && firstPrize.length === 4) {
+      twoLast = firstPrize.slice(-2)
+    }
 
     return { drawDate, firstPrize, threeTop, twoLast, patthanaNumbers }
   }

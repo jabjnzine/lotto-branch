@@ -94,7 +94,7 @@ function ResultForm({
             onChange={(e) => setFirstPrize(e.target.value.replace(/\D/g, '').slice(0, isThaiFull ? 6 : 4))}
             inputMode="numeric"
             placeholder={isThaiFull ? '------' : '----'}
-            className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-blue-500"
+            className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-sky-500"
           />
           {isLaoFull && firstPrize.length === 4 && (
             <div className="flex gap-4 mt-2 text-xs text-slate-500">
@@ -114,7 +114,7 @@ function ResultForm({
               value={threeFront}
               onChange={(e) => setThreeFront(e.target.value)}
               placeholder="เช่น 267, 318"
-              className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-blue-500"
+              className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-sky-500"
             />
           </div>
           <div>
@@ -125,7 +125,7 @@ function ResultForm({
               value={threeBack}
               onChange={(e) => setThreeBack(e.target.value)}
               placeholder="เช่น 065, 153"
-              className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-blue-500"
+              className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-sky-500"
             />
           </div>
         </>
@@ -148,7 +148,7 @@ function ResultForm({
                 inputMode="numeric"
                 placeholder="--"
                 maxLength={2}
-                className="h-12 border-2 border-slate-200 rounded-lg px-2 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-blue-500"
+                className="h-12 border-2 border-slate-200 rounded-lg px-2 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-sky-500"
               />
             ))}
           </div>
@@ -162,7 +162,7 @@ function ResultForm({
           onChange={(e) => setTwoLast(e.target.value.replace(/\D/g, '').slice(0, 2))}
           inputMode="numeric"
           placeholder="--"
-          className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-blue-500"
+          className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-sky-500"
         />
       </div>
       )}
@@ -218,7 +218,7 @@ export default function ResultsPage() {
       <PageHeader title="ผลหวย" />
 
       {/* Type Selector */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 rounded-lg border border-sky-200 bg-white p-3 shadow-sm">
         {lotteryTypes?.map((lt) => (
           <button
             key={lt.id}
@@ -228,8 +228,8 @@ export default function ResultsPage() {
             }}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedTypeId === lt.id
-                ? 'bg-blue-600 text-white'
-                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                ? 'bg-sky-600 text-white'
+                : 'bg-white border border-sky-200 text-slate-700 hover:bg-sky-50'
             }`}
           >
             {lt.name}
@@ -283,7 +283,7 @@ export default function ResultsPage() {
                     key={round.id}
                     onClick={() => setSelectedRoundId(round.id)}
                     className={`w-full text-left px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors ${
-                      selectedRoundId === round.id ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
+                      selectedRoundId === round.id ? 'bg-sky-50 border-l-2 border-l-sky-500' : ''
                     }`}
                   >
                     <div className="flex items-center justify-between">

@@ -10,7 +10,7 @@ export function LoadingSpinner({ className, size = 'md' }: Props) {
 
   return (
     <div className={cn('flex items-center justify-center', className)}>
-      <div className={cn('animate-spin rounded-full border-2 border-slate-200 border-t-blue-600', sizeClass)} />
+      <div className={cn('animate-spin rounded-full border-2 border-sky-100 border-t-sky-600', sizeClass)} />
     </div>
   )
 }

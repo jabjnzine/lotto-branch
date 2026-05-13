@@ -2,13 +2,14 @@
 
 import { useAuthStore } from '@/lib/stores/useAuthStore'
 import { useTodayRounds } from '@/lib/hooks/useRounds'
+import { useTodayBetsSummary } from '@/lib/hooks/useBets'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Countdown } from '@/components/shared/Countdown'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { formatThaiDate } from '@/lib/utils'
-import { Trophy, Ticket, Ban, TrendingUp } from 'lucide-react'
+import { formatCurrency, formatThaiDate } from '@/lib/utils'
+import { Trophy, Ticket, Ban, TrendingUp, FileText, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 
 const statusLabel: Record<string, { label: string; variant: 'success' | 'destructive' | 'default' | 'warning' }> = {
@@ -21,11 +22,12 @@ const statusLabel: Record<string, { label: string; variant: 'success' | 'destruc
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
   const { data: todayRounds, isLoading } = useTodayRounds()
+  const { data: todaySummary } = useTodayBetsSummary()
 
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
   const quickLinks = [
-    { href: '/bet', label: 'คีย์หวย', icon: Ticket, color: 'bg-blue-500', desc: 'บันทึกการแทง' },
+    { href: '/bet', label: 'คีย์หวย', icon: Ticket, color: 'bg-sky-500', desc: 'บันทึกการแทง' },
     { href: '/restrictions', label: 'เลขอั้น', icon: Ban, color: 'bg-red-500', desc: 'จัดการเลขอั้น' },
     { href: '/results', label: 'ผลหวย', icon: Trophy, color: 'bg-amber-500', desc: 'บันทึกผล' },
     { href: '/income', label: 'รายได้', icon: TrendingUp, color: 'bg-green-500', desc: 'ดูยอดรายได้' },
@@ -37,7 +39,7 @@ export default function DashboardPage() {
     <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader
         title={`สวัสดี, ${user?.name ?? 'Admin'}`}
-        description="ภาพรวมระบบหวยวันนี้"
+        description={`${formatThaiDate(today)} — ภาพรวมระบบหวยวันนี้`}
       />
 
       {/* Quick Links */}
@@ -57,6 +59,38 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* Today's Summary */}
+      {todaySummary && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
+                <FileText className="h-5 w-5 text-sky-600" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">จำนวนบิลวันนี้</p>
+                <p className="text-xl font-bold tabular-nums text-slate-900">
+                  {todaySummary.billCount.toLocaleString()} <span className="text-sm font-normal text-slate-500">บิล</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
+                <DollarSign className="h-5 w-5 text-sky-600" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">ยอดรับวันนี้</p>
+                <p className="text-xl font-bold tabular-nums text-sky-600">
+                  {formatCurrency(todaySummary.totalAmount)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Today's Rounds */}
       <Card>
         <CardHeader>
@@ -72,7 +106,7 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={round.id}
-                    className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-sky-50 rounded-lg"
                   >
                     <div>
                       <p className="font-medium text-sm">{round.lottery_type?.name}</p>

@@ -35,7 +35,7 @@ const Toast = React.forwardRef<
         'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-8 shadow-lg transition-all',
         variant === 'destructive' && 'border-red-200 bg-red-50 text-red-900',
         variant === 'success' && 'border-green-200 bg-green-50 text-green-900',
-        variant === 'default' && 'border-slate-200 bg-white text-slate-900',
+        variant === 'default' && 'border-sky-100 bg-white text-slate-900',
         className,
       )}
       {...props}
