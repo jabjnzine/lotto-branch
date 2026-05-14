@@ -3,98 +3,224 @@
 import { formatThaiDate, formatCurrency, formatTime } from '@/lib/utils'
 import { BET_TYPE_LABEL, type BetType } from '@lotto/shared'
 
-interface ReceiptItem {
+const BET_STATUS_LABEL: Record<string, string> = {
+  pending: 'รอผล',
+  won: 'ถูกรางวัล',
+  lost: 'ไม่ถูก',
+  cancelled: 'ยกเลิก',
+}
+
+export interface ReceiptLineItem {
   number: string
   bet_type: string
   amount: string
+  /** snapshot อัตราจ่าย ณ เวลาแทง */
+  payout_rate?: string | number | null
 }
 
-interface ReceiptProps {
+export interface ReceiptProps {
+  /** เลขอ้างอิงสั้น (เช่น ท้าย UUID) — แสดงชัดให้ลูกค้า */
   billNo: string
+  /** รหัสบิลเต็ม (UUID) — ตรวจสอบย้อนหลัง */
+  betFullId?: string | null
   drawDate: string
   typeName: string
   buyerName: string
-  items: ReceiptItem[]
+  note?: string | null
+  betStatus?: string | null
+  items: ReceiptLineItem[]
   totalAmount: number | string
   createdAt?: string
+  onClose?: () => void
+  onPrint?: () => void
 }
 
-export function Receipt({ billNo, drawDate, typeName, buyerName, items, totalAmount, createdAt }: ReceiptProps) {
+function formatPayoutRate(v: string | number | undefined | null): string {
+  if (v === undefined || v === null || v === '') return '—'
+  const n = typeof v === 'string' ? parseFloat(v) : v
+  if (Number.isNaN(n)) return '—'
+  if (Number.isInteger(n)) return n.toLocaleString('th-TH')
+  return n.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+export function Receipt({
+  billNo,
+  betFullId,
+  drawDate,
+  typeName,
+  buyerName,
+  note,
+  betStatus,
+  items,
+  totalAmount,
+  createdAt,
+  onClose,
+  onPrint,
+}: ReceiptProps) {
+  const statusLabel = betStatus ? BET_STATUS_LABEL[betStatus] ?? betStatus : null
+  const itemCount = items.length
+  const hasAnyRate = items.some((i) => i.payout_rate != null && String(i.payout_rate).trim() !== '')
+
   return (
-    <div className="receipt-printable max-w-[300px] mx-auto text-sm p-4" style={{ fontFamily: 'monospace' }}>
-      {/* Print styles */}
+    <div
+      className="receipt-printable mx-auto w-full sm:w-[300px] text-[13px]"
+      style={{ fontFamily: 'var(--font-sans, sans-serif)' }}
+    >
       <style>{`
         @media print {
           body * { visibility: hidden; }
           .receipt-printable, .receipt-printable * { visibility: visible; }
-          .receipt-printable { position: absolute; left: 0; top: 0; width: 100%; padding: 16px; }
+          .receipt-printable { position: absolute; left: 0; top: 0; width: 300px !important; }
         }
       `}</style>
 
-      <div className="text-center mb-4 border-b border-dashed border-slate-300 pb-3">
-        <h2 className="text-base font-bold">ใบเสร็จรับเงิน</h2>
-        <p className="text-xs text-slate-500 mt-1">ระบบหวย Back Office</p>
-      </div>
+      <div
+        className="sm:rounded-2xl sm:overflow-hidden sm:border"
+        style={{ backgroundColor: '#E3F2FD', borderColor: '#90CAF9' }}
+      >
+        {/* Header */}
+        <div className="px-4 py-4 text-center text-white" style={{ backgroundColor: '#42A5F5' }}>
+          <div className="text-[17px] font-medium mb-0.5">ใบเสร็จรับเงิน</div>
+          <div className="text-xs opacity-85">ระบบหวย Back Office</div>
+        </div>
 
-      <div className="space-y-1.5 text-xs">
-        <div className="flex justify-between">
-          <span className="text-slate-500">เลขที่บิล</span>
-          <span className="font-semibold">{billNo}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">งวดวันที่</span>
-          <span className="font-semibold">{formatThaiDate(drawDate)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">ประเภท</span>
-          <span className="font-semibold">{typeName}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">ลูกค้า</span>
-          <span className="font-semibold">{buyerName || 'ลูกค้าทั่วไป'}</span>
-        </div>
-        {createdAt && (
-          <div className="flex justify-between">
-            <span className="text-slate-500">เวลา</span>
-            <span className="font-semibold">{formatTime(createdAt)}</span>
+        {/* Body */}
+        <div className="px-4 py-4">
+          {/* Info rows */}
+          <div className="space-y-[5px]">
+            <Row label="เลขที่บิล" value={billNo} />
+            {betFullId ? (
+              <div className="flex flex-col gap-0.5 pb-1.5 border-b" style={{ borderColor: '#90CAF9' }}>
+                <span className="text-xs" style={{ color: '#1565C0' }}>รหัสบิล (เต็ม)</span>
+                <span className="break-all text-[10px] font-medium leading-snug" style={{ color: '#0D47A1' }}>
+                  {betFullId}
+                </span>
+              </div>
+            ) : null}
+            <Row label="งวดวันที่" value={formatThaiDate(drawDate)} />
+            <Row label="ประเภท" value={typeName} />
+            {statusLabel ? <Row label="สถานะบิล" value={statusLabel} /> : null}
+            <Row label="ลูกค้า" value={buyerName || 'ลูกค้าทั่วไป'} />
+            {note?.trim() ? (
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs" style={{ color: '#1565C0' }}>หมายเหตุ</span>
+                <span className="whitespace-pre-wrap break-words text-[11px] font-medium" style={{ color: '#0D47A1' }}>
+                  {note.trim()}
+                </span>
+              </div>
+            ) : null}
+            <Row label="เวลา" value={createdAt ? formatTime(createdAt) : '—'} />
+            <Row label="จำนวนรายการ" value={`${itemCount} รายการ`} />
           </div>
-        )}
-      </div>
 
-      <div className="mt-3 border-t border-b border-dashed border-slate-300 py-2">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="text-slate-500">
-              <th className="text-left py-1 font-normal">เลข</th>
-              <th className="text-left py-1 font-normal">ประเภท</th>
-              <th className="text-right py-1 font-normal">ยอด</th>
-            </tr>
-          </thead>
-          <tbody>
+          <hr className="my-3" style={{ borderColor: '#90CAF9' }} />
+
+          {/* Column headers */}
+          <div
+            className="flex justify-between px-3 pb-1.5"
+            style={{ paddingRight: hasAnyRate ? 0 : undefined }}
+          >
+            <span className="text-[11px] font-medium" style={{ color: '#1565C0' }}>เลข</span>
+            <span className="text-[11px] font-medium" style={{ color: '#1565C0' }}>ประเภท</span>
+            {hasAnyRate ? (
+              <span className="text-[11px] font-medium text-right w-12" style={{ color: '#1565C0' }}>จ่าย</span>
+            ) : null}
+            <span className="text-[11px] font-medium" style={{ color: '#1565C0' }}>ยอด</span>
+          </div>
+
+          {/* Item cards */}
+          <div className="space-y-2">
             {items.map((item, i) => (
-              <tr key={i} className="border-t border-slate-100">
-                <td className="py-1 font-semibold">{item.number}</td>
-                <td className="py-1 text-slate-600">
-                  {BET_TYPE_LABEL[item.bet_type as BetType] ?? item.bet_type}
-                </td>
-                <td className="py-1 text-right tabular-nums">
-                  {formatCurrency(item.amount)}
-                </td>
-              </tr>
+              <div
+                key={i}
+                className="flex justify-between items-center bg-white rounded-[10px] px-3 py-2.5 border"
+                style={{ borderColor: '#BBDEFB' }}
+              >
+                <div className="flex gap-2.5 items-center min-w-0 flex-1">
+                  <span
+                    className="text-white rounded-md px-2.5 py-1 text-sm font-medium shrink-0"
+                    style={{ backgroundColor: '#1565C0' }}
+                  >
+                    {item.number}
+                  </span>
+                  <span className="text-xs truncate" style={{ color: '#1565C0' }}>
+                    {BET_TYPE_LABEL[item.bet_type as BetType] ?? item.bet_type}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {hasAnyRate ? (
+                    <span className="text-[10px] tabular-nums w-12 text-right" style={{ color: '#1565C0' }}>
+                      {formatPayoutRate(item.payout_rate)}
+                    </span>
+                  ) : null}
+                  <span className="font-medium text-[13px] tabular-nums" style={{ color: '#0D47A1' }}>
+                    {formatCurrency(item.amount)}
+                  </span>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </div>
 
-      <div className="flex justify-between mt-3 font-bold text-base border-t border-dashed border-slate-300 pt-2">
-        <span>รวมทั้งสิ้น</span>
-        <span className="tabular-nums">{formatCurrency(totalAmount)} บาท</span>
-      </div>
+          {/* Total */}
+          <div
+            className="flex justify-between items-center rounded-[10px] px-3.5 py-3 mt-2"
+            style={{ backgroundColor: '#1565C0' }}
+          >
+            <span className="text-white text-sm font-medium">รวมทั้งสิ้น</span>
+            <span className="text-white text-xl font-medium tabular-nums">
+              {formatCurrency(totalAmount)} บาท
+            </span>
+          </div>
 
-      <div className="text-center text-xs text-slate-400 mt-6">
-        <p>ขอบคุณที่ใช้บริการ</p>
-        <p className="mt-1">พิมพ์เมื่อ {new Date().toLocaleString('th-TH')}</p>
+          {/* Footer */}
+          <div className="text-center text-[11px] mt-3 mb-1 leading-relaxed" style={{ color: '#1976D2' }}>
+            <p>ขอบคุณที่ใช้บริการ</p>
+            <p>พิมพ์เมื่อ {new Date().toLocaleString('th-TH')}</p>
+          </div>
+
+          {/* Action buttons — hidden when printing */}
+          {(onClose || onPrint) && (
+            <div className="flex gap-2 mt-2.5 print:hidden pb-[env(safe-area-inset-bottom,0px)]">
+              {onClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-2 rounded-lg border text-[13px] cursor-pointer text-center transition-colors hover:bg-sky-50"
+                  style={{ borderColor: '#90CAF9', backgroundColor: '#fff', color: '#1565C0' }}
+                >
+                  ปิด
+                </button>
+              )}
+              {onPrint && (
+                <button
+                  type="button"
+                  onClick={onPrint}
+                  className="flex-1 py-2 rounded-lg border-none text-[13px] cursor-pointer flex items-center justify-center gap-1.5 transition-colors hover:opacity-90"
+                  style={{ backgroundColor: '#1976D2', color: '#fff' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9" />
+                    <path d="M6 12H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2" />
+                    <rect x="6" y="14" width="12" height="8" />
+                  </svg>
+                  พิมพ์
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+    </div>
+  )
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-xs" style={{ color: '#1565C0' }}>{label}</span>
+      <span className="text-xs font-medium max-w-[60%] text-right leading-snug" style={{ color: '#0D47A1' }}>
+        {value}
+      </span>
     </div>
   )
 }

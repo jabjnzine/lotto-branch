@@ -15,4 +15,7 @@ export const AppDataSource = new DataSource({
   migrations: [isProd ? 'dist/migrations/*.js' : 'src/migrations/*.ts'],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',
+  extra: {
+    options: '-c timezone=UTC',
+  },
 })

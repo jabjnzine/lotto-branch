@@ -43,9 +43,10 @@ export interface TodayAllBets {
       id: string
       created_at: string
       buyer_name?: string | null
+      note?: string | null
       total_amount: string
       status: string
-      items: Array<{ id: string; number: string; bet_type: string; amount: string }>
+      items: Array<{ id: string; number: string; bet_type: string; amount: string; payout_rate?: string }>
     }>
     totalAmount: number
     betCount: number

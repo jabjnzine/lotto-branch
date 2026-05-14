@@ -29,7 +29,12 @@ export function formatCurrency(amount: string | number) {
 }
 
 export function formatTime(date: string | Date) {
-  return dayjs.tz(date).format('HH:mm')
+  return new Date(date).toLocaleTimeString('th-TH', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Bangkok',
+  })
 }
 
 export { dayjs }

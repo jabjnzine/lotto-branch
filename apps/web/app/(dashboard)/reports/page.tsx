@@ -15,6 +15,12 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatThaiDate, formatCurrency, formatTime } from '@/lib/utils'
 import { BET_TYPE_LABEL, BetType } from '@lotto/shared'
 import { Receipt } from '@/components/shared/Receipt'
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { Download, ChevronDown, ChevronRight, User, FileText, BarChart2, CheckCircle, XCircle, DollarSign, TrendingUp, Printer } from 'lucide-react'
 
 const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'destructive' | 'warning' | 'default' }> = {
@@ -40,9 +46,16 @@ export default function ReportsPage() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [printReceipt, setPrintReceipt] = useState<{
-    billNo: string; drawDate: string; typeName: string; buyerName: string
-    items: Array<{ number: string; bet_type: string; amount: string }>
-    totalAmount: number; createdAt: string
+    billNo: string
+    betFullId?: string
+    drawDate: string
+    typeName: string
+    buyerName: string
+    note?: string | null
+    betStatus?: string | null
+    items: Array<{ number: string; bet_type: string; amount: string; payout_rate?: string | number | null }>
+    totalAmount: number
+    createdAt: string
   } | null>(null)
 
   useEffect(() => {
@@ -216,6 +229,7 @@ export default function ReportsPage() {
                             <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">ประเภท</th>
                             <th className="text-right px-3 py-2 text-xs text-slate-500 font-medium">ยอด</th>
                             <th className="text-center px-3 py-2 text-xs text-slate-500 font-medium">สถานะ</th>
+                            <th className="text-center px-3 py-2 text-xs text-slate-500 font-medium w-10" />
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -250,6 +264,36 @@ export default function ReportsPage() {
                                     <Badge variant={st.variant} className="text-[10px]">
                                       {st.label}
                                     </Badge>
+                                  )}
+                                </td>
+                                <td className="px-1 py-1.5 text-center">
+                                  {i === 0 && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setPrintReceipt({
+                                          billNo: bet.id.slice(-8).toUpperCase(),
+                                          betFullId: bet.id,
+                                          drawDate: group.drawDate,
+                                          typeName: group.typeName,
+                                          buyerName: bet.buyer_name ?? 'ลูกค้าทั่วไป',
+                                          note: bet.note ?? null,
+                                          betStatus: bet.status,
+                                          items: bet.items.map((item) => ({
+                                            number: item.number,
+                                            bet_type: item.bet_type,
+                                            amount: item.amount,
+                                            payout_rate: item.payout_rate,
+                                          })),
+                                          totalAmount: Number(bet.total_amount),
+                                          createdAt: bet.created_at,
+                                        })
+                                      }}
+                                      className="text-slate-300 hover:text-sky-600 transition-colors"
+                                      title="พิมพ์ใบเสร็จ"
+                                    >
+                                      <Printer className="h-3.5 w-3.5" />
+                                    </button>
                                   )}
                                 </td>
                               </tr>
@@ -443,6 +487,7 @@ export default function ReportsPage() {
                               number: string
                               bet_type: string
                               amount: string
+                              payout_rate?: string
                             }>
                           }) => {
                             const isExpanded = expandedBetId === bet.id
@@ -526,7 +571,36 @@ export default function ReportsPage() {
                                         </table>
                                       </div>
                                       {bet.status === 'pending' && (
-                                        <div className="px-8 py-2 border-t border-slate-100 flex justify-end">
+                                        <div className="px-8 py-2 border-t border-slate-100 flex justify-end gap-2">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setPrintReceipt({
+                                                billNo: bet.id.slice(-8).toUpperCase(),
+                                                betFullId: bet.id,
+                                                drawDate: selectedRound?.draw_date ?? '',
+                                                typeName: selectedRound?.lottery_type?.name ?? '',
+                                                buyerName: bet.buyer_name ?? 'ลูกค้าทั่วไป',
+                                                note: bet.note ?? null,
+                                                betStatus: bet.status,
+                                                items:
+                                                  bet.items?.map((item) => ({
+                                                    number: item.number,
+                                                    bet_type: item.bet_type,
+                                                    amount: item.amount,
+                                                    payout_rate: item.payout_rate,
+                                                  })) ?? [],
+                                                totalAmount: Number(bet.total_amount),
+                                                createdAt: bet.created_at,
+                                              })
+                                            }}
+                                            className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 text-xs"
+                                          >
+                                            <Printer className="h-3.5 w-3.5 mr-1" />
+                                            พิมพ์ใบเสร็จ
+                                          </Button>
                                           <Button
                                             variant="ghost"
                                             size="sm"
@@ -537,6 +611,39 @@ export default function ReportsPage() {
                                             className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs"
                                           >
                                             ยกเลิกบิลนี้
+                                          </Button>
+                                        </div>
+                                      )}
+                                      {bet.status !== 'pending' && (
+                                        <div className="px-8 py-2 border-t border-slate-100 flex justify-end">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setPrintReceipt({
+                                                billNo: bet.id.slice(-8).toUpperCase(),
+                                                betFullId: bet.id,
+                                                drawDate: selectedRound?.draw_date ?? '',
+                                                typeName: selectedRound?.lottery_type?.name ?? '',
+                                                buyerName: bet.buyer_name ?? 'ลูกค้าทั่วไป',
+                                                note: bet.note ?? null,
+                                                betStatus: bet.status,
+                                                items:
+                                                  bet.items?.map((item) => ({
+                                                    number: item.number,
+                                                    bet_type: item.bet_type,
+                                                    amount: item.amount,
+                                                    payout_rate: item.payout_rate,
+                                                  })) ?? [],
+                                                totalAmount: Number(bet.total_amount),
+                                                createdAt: bet.created_at,
+                                              })
+                                            }}
+                                            className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 text-xs"
+                                          >
+                                            <Printer className="h-3.5 w-3.5 mr-1" />
+                                            พิมพ์ใบเสร็จ
                                           </Button>
                                         </div>
                                       )}
@@ -571,6 +678,38 @@ export default function ReportsPage() {
           }
         }}
       />
+
+      {/* Receipt Dialog — modal on desktop, fullscreen on mobile/print */}
+      <Dialog
+        open={!!printReceipt}
+        onOpenChange={(open) => {
+          if (!open) setPrintReceipt(null)
+        }}
+      >
+        <DialogContent
+          overlayClassName="max-sm:hidden"
+          className="w-full max-w-none min-w-0 gap-0 border-0 !bg-transparent p-0 !shadow-none rounded-none max-sm:!inset-0 max-sm:!translate-x-0 max-sm:!translate-y-0 max-sm:!rounded-none max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:bg-[#E3F2FD] sm:left-1/2 sm:top-1/2 sm:w-fit sm:max-w-[min(100vw,360px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-none [&>button]:hidden"
+        >
+          <DialogTitle className="sr-only">ใบเสร็จ</DialogTitle>
+          <DialogDescription className="sr-only">รายละเอียดใบเสร็จรับเงิน</DialogDescription>
+          {printReceipt && (
+            <Receipt
+              billNo={printReceipt.billNo}
+              betFullId={printReceipt.betFullId}
+              drawDate={printReceipt.drawDate}
+              typeName={printReceipt.typeName}
+              buyerName={printReceipt.buyerName}
+              note={printReceipt.note}
+              betStatus={printReceipt.betStatus}
+              items={printReceipt.items}
+              totalAmount={printReceipt.totalAmount}
+              createdAt={printReceipt.createdAt}
+              onClose={() => setPrintReceipt(null)}
+              onPrint={() => window.print()}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

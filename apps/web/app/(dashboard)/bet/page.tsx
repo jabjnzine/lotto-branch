@@ -17,7 +17,6 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import {
   BET_TYPE_DIGIT_COUNT,
@@ -82,10 +81,13 @@ export default function BetPage() {
   const [receiptDialog, setReceiptDialog] = useState<{
     show: boolean
     billNo: string
+    betFullId?: string
     drawDate: string
     typeName: string
     buyerName: string
-    items: Array<{ number: string; bet_type: string; amount: string }>
+    note?: string | null
+    betStatus?: string | null
+    items: Array<{ number: string; bet_type: string; amount: string; payout_rate?: string | number | null }>
     totalAmount: number
     createdAt: string
   }>({
@@ -233,14 +235,25 @@ export default function BetPage() {
     setReceiptDialog({
       show: true,
       billNo: savedBet.id?.slice(-8).toUpperCase() ?? draftBillNo,
+      betFullId: savedBet.id,
       drawDate: currentRound.draw_date,
       typeName: selectedType?.name ?? '',
       buyerName: buyerName || 'ลูกค้าทั่วไป',
-      items: (savedBet.items ?? draftItems).map((item: { number: string; bet_type: string; amount: string | number }) => ({
-        number: item.number,
-        bet_type: item.bet_type,
-        amount: String(item.amount),
-      })),
+      note: savedBet.note ?? note ?? null,
+      betStatus: savedBet.status ?? 'pending',
+      items: (savedBet.items ?? draftItems).map(
+        (item: {
+          number: string
+          bet_type: string
+          amount: string | number
+          payout_rate?: string | number | null
+        }) => ({
+          number: item.number,
+          bet_type: item.bet_type,
+          amount: String(item.amount),
+          payout_rate: item.payout_rate ?? null,
+        }),
+      ),
       totalAmount: Number(savedBet.total_amount ?? total),
       createdAt: savedBet.created_at ?? new Date().toISOString(),
     })
@@ -809,33 +822,26 @@ export default function BetPage() {
           if (!open) setReceiptDialog((s) => ({ ...s, show: false }))
         }}
       >
-        <DialogContent className="max-w-sm">
+        <DialogContent
+          overlayClassName="max-sm:hidden"
+          className="w-full max-w-none min-w-0 gap-0 border-0 !bg-transparent p-0 !shadow-none rounded-none max-sm:!inset-0 max-sm:!translate-x-0 max-sm:!translate-y-0 max-sm:!rounded-none max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:bg-[#E3F2FD] sm:left-1/2 sm:top-1/2 sm:w-fit sm:max-w-[min(100vw,360px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-none [&>button]:hidden"
+        >
           <DialogTitle className="sr-only">ใบเสร็จ</DialogTitle>
           <DialogDescription className="sr-only">รายละเอียดใบเสร็จรับเงิน</DialogDescription>
           <Receipt
             billNo={receiptDialog.billNo}
+            betFullId={receiptDialog.betFullId}
             drawDate={receiptDialog.drawDate}
             typeName={receiptDialog.typeName}
             buyerName={receiptDialog.buyerName}
+            note={receiptDialog.note}
+            betStatus={receiptDialog.betStatus}
             items={receiptDialog.items}
             totalAmount={receiptDialog.totalAmount}
             createdAt={receiptDialog.createdAt}
+            onClose={() => setReceiptDialog((s) => ({ ...s, show: false }))}
+            onPrint={() => window.print()}
           />
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setReceiptDialog((s) => ({ ...s, show: false }))}
-            >
-              ปิด
-            </Button>
-            <Button
-              onClick={() => window.print()}
-              className="gap-2 bg-[#0284c7] hover:bg-[#0369a1]"
-            >
-              <Printer className="h-4 w-4" />
-              พิมพ์
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

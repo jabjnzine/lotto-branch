@@ -34,8 +34,6 @@ export default function IncomePage() {
     }
   }, [selectedTypeId, lotteryTypes])
 
-  if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
-
   const sortedRounds = useMemo(() => {
     if (!rounds) return []
     return [...rounds].sort((a, b) => {
@@ -44,6 +42,8 @@ export default function IncomePage() {
   }, [rounds])
 
   const profit = summary ? parseFloat(summary.profit) : 0
+
+  if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 pb-6">

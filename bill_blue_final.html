@@ -1,0 +1,70 @@
+
+<style>
+.center { display: flex; justify-content: center; padding: 1.5rem 0; }
+.bill { width: 300px; font-family: var(--font-sans); font-size: 13px; background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 16px; overflow: hidden; }
+.b-header { background: #42A5F5; color: #fff; padding: 16px; text-align: center; }
+.b-header .title { font-size: 17px; font-weight: 500; margin-bottom: 2px; }
+.b-header .sub { font-size: 12px; opacity: 0.85; }
+.b-body { padding: 16px; }
+.b-row { display: flex; justify-content: space-between; margin: 5px 0; }
+.b-key { color: #1565C0; font-size: 12px; }
+.b-val { color: #0D47A1; font-size: 12px; font-weight: 500; }
+.b-divider { border: none; border-top: 1px solid #90CAF9; margin: 12px 0; }
+.b-col-head { display: flex; justify-content: space-between; padding: 0 12px 6px; }
+.b-col-head span { color: #1565C0; font-size: 11px; font-weight: 500; }
+.b-card { background: #fff; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #BBDEFB; }
+.b-card-left { display: flex; gap: 10px; align-items: center; }
+.b-card-num { background: #1565C0; color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 14px; font-weight: 500; }
+.b-card-type { color: #1565C0; font-size: 12px; }
+.b-card-amt { color: #0D47A1; font-weight: 500; font-size: 13px; }
+.b-total { background: #1565C0; border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.b-total-label { color: #fff; font-size: 14px; font-weight: 500; }
+.b-total-val { color: #fff; font-size: 20px; font-weight: 500; }
+.b-footer { text-align: center; color: #1976D2; font-size: 11px; margin: 12px 0 4px; line-height: 1.6; }
+.b-btns { display: flex; gap: 8px; margin-top: 10px; }
+.b-btn-close { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #90CAF9; background: #fff; color: #1565C0; font-size: 13px; cursor: pointer; text-align: center; }
+.b-btn-print { flex: 1; padding: 8px; border-radius: 8px; border: none; background: #1976D2; color: #fff; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+</style>
+
+<div class="center">
+  <div class="bill">
+    <div class="b-header">
+      <div class="title">ใบเสร็จรับเงิน</div>
+      <div class="sub">ระบบหวย Back Office</div>
+    </div>
+    <div class="b-body">
+      <div class="b-row"><span class="b-key">เลขที่บิล</span><span class="b-val">20180494</span></div>
+      <div class="b-row"><span class="b-key">งวดวันที่</span><span class="b-val">14 พฤษภาคม 2569</span></div>
+      <div class="b-row"><span class="b-key">ประเภท</span><span class="b-val">หวยลาว</span></div>
+      <div class="b-row"><span class="b-key">ลูกค้า</span><span class="b-val">ลูกค้าทั่วไป</span></div>
+      <div class="b-row"><span class="b-key">เวลา</span><span class="b-val">01:50</span></div>
+      <hr class="b-divider">
+      <div class="b-col-head">
+        <span>เลข</span><span>ประเภท</span><span>ยอด</span>
+      </div>
+      <div class="b-card">
+        <div class="b-card-left">
+          <span class="b-card-num">159</span>
+          <span class="b-card-type">3 ตัวบน</span>
+        </div>
+        <span class="b-card-amt">200.00 บาท</span>
+      </div>
+      <div class="b-card">
+        <div class="b-card-left">
+          <span class="b-card-num">951</span>
+          <span class="b-card-type">3 ตัวบน</span>
+        </div>
+        <span class="b-card-amt">200.00 บาท</span>
+      </div>
+      <div class="b-total">
+        <span class="b-total-label">รวมทั้งสิ้น</span>
+        <span class="b-total-val">400.00 บาท</span>
+      </div>
+      <div class="b-footer">ขอบคุณที่ใช้บริการ<br>พิมพ์เมื่อ 14/5/2569 15:51:10</div>
+      <div class="b-btns">
+        <div class="b-btn-close">ปิด</div>
+        <div class="b-btn-print"><i class="ti ti-printer" aria-hidden="true"></i> พิมพ์</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -36,6 +36,9 @@ import { AuditLog } from './entities/audit-log.entity'
       migrations: ['dist/migrations/*.js'],
       synchronize: false,
       logging: process.env.NODE_ENV === 'development',
+      extra: {
+        options: '-c timezone=UTC',
+      },
     }),
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
