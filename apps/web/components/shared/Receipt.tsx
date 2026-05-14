@@ -63,7 +63,7 @@ export function Receipt({
 
   return (
     <div
-      className="receipt-printable mx-auto w-full sm:w-[300px] text-[13px]"
+      className="receipt-printable mx-auto w-full max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col sm:w-[300px] text-[13px]"
       style={{ fontFamily: 'var(--font-sans, sans-serif)' }}
     >
       <style>{`
@@ -75,17 +75,18 @@ export function Receipt({
       `}</style>
 
       <div
-        className="sm:rounded-2xl sm:overflow-hidden sm:border"
+        className="max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col sm:rounded-2xl sm:overflow-hidden sm:border"
         style={{ backgroundColor: '#E3F2FD', borderColor: '#90CAF9' }}
       >
         {/* Header */}
-        <div className="px-4 py-4 text-center text-white" style={{ backgroundColor: '#42A5F5' }}>
+        <div className="shrink-0 px-4 py-4 text-center text-white" style={{ backgroundColor: '#42A5F5' }}>
           <div className="text-[17px] font-medium mb-0.5">ใบเสร็จรับเงิน</div>
           <div className="text-xs opacity-85">ระบบหวย Back Office</div>
         </div>
 
         {/* Body */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-4 max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col max-sm:pb-2">
+          <div className="max-sm:min-h-0 max-sm:flex-1 max-sm:overflow-y-auto max-sm:overscroll-contain print:overflow-visible print:max-sm:flex-none">
           {/* Info rows */}
           <div className="space-y-[5px]">
             <Row label="เลขที่บิล" value={billNo} />
@@ -177,10 +178,11 @@ export function Receipt({
             <p>ขอบคุณที่ใช้บริการ</p>
             <p>พิมพ์เมื่อ {new Date().toLocaleString('th-TH')}</p>
           </div>
+          </div>
 
           {/* Action buttons — hidden when printing */}
           {(onClose || onPrint) && (
-            <div className="flex gap-2 mt-2.5 print:hidden pb-[env(safe-area-inset-bottom,0px)]">
+            <div className="mt-2.5 flex gap-2 print:hidden max-sm:mt-auto max-sm:shrink-0 max-sm:pt-2 pb-[env(safe-area-inset-bottom,0px)]">
               {onClose && (
                 <button
                   type="button"

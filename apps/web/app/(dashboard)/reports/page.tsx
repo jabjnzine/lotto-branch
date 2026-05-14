@@ -688,7 +688,7 @@ export default function ReportsPage() {
       >
         <DialogContent
           overlayClassName="max-sm:hidden"
-          className="w-full max-w-none min-w-0 gap-0 border-0 !bg-transparent p-0 !shadow-none rounded-none max-sm:!inset-0 max-sm:!translate-x-0 max-sm:!translate-y-0 max-sm:!rounded-none max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:bg-[#E3F2FD] sm:left-1/2 sm:top-1/2 sm:w-fit sm:max-w-[min(100vw,360px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-none [&>button]:hidden"
+          className="w-full max-w-none min-w-0 gap-0 border-0 !bg-transparent p-0 !shadow-none rounded-none max-sm:!top-0 max-sm:!left-0 max-sm:!right-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:!max-w-none max-sm:!translate-x-0 max-sm:!translate-y-0 max-sm:!rounded-none max-sm:!max-h-none max-sm:overflow-hidden max-sm:overscroll-contain max-sm:bg-[#E3F2FD] max-sm:flex max-sm:flex-col sm:left-1/2 sm:top-1/2 sm:w-fit sm:max-w-[min(100vw,360px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-none [&>button]:hidden"
         >
           <DialogTitle className="sr-only">ใบเสร็จ</DialogTitle>
           <DialogDescription className="sr-only">รายละเอียดใบเสร็จรับเงิน</DialogDescription>
