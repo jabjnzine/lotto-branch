@@ -13,6 +13,13 @@
     "pnpm": ">=10"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@nestjs/core", "bcrypt", "sharp"]
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "bcrypt",
+      "sharp"
+    ]
+  },
+  "dependencies": {
+    "react-to-print": "^3.3.0"
   }
 }

@@ -699,7 +699,6 @@ export default function ReportsPage() {
               totalAmount={printReceipt.totalAmount}
               createdAt={printReceipt.createdAt}
               onClose={() => setPrintReceipt(null)}
-              onPrint={() => window.print()}
             />
           )}
         </DialogContent>

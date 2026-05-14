@@ -840,7 +840,6 @@ export default function BetPage() {
             totalAmount={receiptDialog.totalAmount}
             createdAt={receiptDialog.createdAt}
             onClose={() => setReceiptDialog((s) => ({ ...s, show: false }))}
-            onPrint={() => window.print()}
           />
         </DialogContent>
       </Dialog>

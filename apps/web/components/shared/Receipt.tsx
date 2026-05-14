@@ -1,5 +1,7 @@
 'use client'
 
+import { useRef } from 'react'
+import { useReactToPrint } from 'react-to-print'
 import { formatThaiDate, formatCurrency, formatTime } from '@/lib/utils'
 import { BET_TYPE_LABEL, type BetType } from '@lotto/shared'
 
@@ -14,14 +16,11 @@ export interface ReceiptLineItem {
   number: string
   bet_type: string
   amount: string
-  /** snapshot อัตราจ่าย ณ เวลาแทง */
   payout_rate?: string | number | null
 }
 
 export interface ReceiptProps {
-  /** เลขอ้างอิงสั้น (เช่น ท้าย UUID) — แสดงชัดให้ลูกค้า */
   billNo: string
-  /** รหัสบิลเต็ม (UUID) — ตรวจสอบย้อนหลัง */
   betFullId?: string | null
   drawDate: string
   typeName: string
@@ -57,24 +56,38 @@ export function Receipt({
   onClose,
   onPrint,
 }: ReceiptProps) {
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: `ใบเสร็จ-${billNo}`,
+    pageStyle: `
+      @page {
+        size: A6;
+        margin: 4mm;
+      }
+      @media print {
+        html, body {
+          margin: 0;
+          padding: 0;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    `,
+  })
+
+  const printHandler = onPrint ?? handlePrint
   const statusLabel = betStatus ? BET_STATUS_LABEL[betStatus] ?? betStatus : null
   const itemCount = items.length
   const hasAnyRate = items.some((i) => i.payout_rate != null && String(i.payout_rate).trim() !== '')
 
   return (
-    <div
-      className="receipt-printable mx-auto w-full max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col sm:w-[300px] text-[13px]"
+    <div className="mx-auto w-full max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col sm:w-[300px] text-[13px]"
       style={{ fontFamily: 'var(--font-sans, sans-serif)' }}
     >
-      <style>{`
-        @media print {
-          body * { visibility: hidden; }
-          .receipt-printable, .receipt-printable * { visibility: visible; }
-          .receipt-printable { position: absolute; left: 0; top: 0; width: 300px !important; }
-        }
-      `}</style>
-
       <div
+        ref={contentRef}
         className="max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col sm:rounded-2xl sm:overflow-hidden sm:border"
         style={{ backgroundColor: '#E3F2FD', borderColor: '#90CAF9' }}
       >
@@ -181,35 +194,31 @@ export function Receipt({
           </div>
 
           {/* Action buttons — hidden when printing */}
-          {(onClose || onPrint) && (
-            <div className="mt-2.5 flex gap-2 print:hidden max-sm:mt-auto max-sm:shrink-0 max-sm:pt-2 pb-[env(safe-area-inset-bottom,0px)]">
-              {onClose && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 py-2 rounded-lg border text-[13px] cursor-pointer text-center transition-colors hover:bg-sky-50"
-                  style={{ borderColor: '#90CAF9', backgroundColor: '#fff', color: '#1565C0' }}
-                >
-                  ปิด
-                </button>
-              )}
-              {onPrint && (
-                <button
-                  type="button"
-                  onClick={onPrint}
-                  className="flex-1 py-2 rounded-lg border-none text-[13px] cursor-pointer flex items-center justify-center gap-1.5 transition-colors hover:opacity-90"
-                  style={{ backgroundColor: '#1976D2', color: '#fff' }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6 9 6 2 18 2 18 9" />
-                    <path d="M6 12H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2" />
-                    <rect x="6" y="14" width="12" height="8" />
-                  </svg>
-                  พิมพ์
-                </button>
-              )}
-            </div>
-          )}
+          <div className="mt-2.5 flex gap-2 print:hidden max-sm:mt-auto max-sm:shrink-0 max-sm:pt-2 pb-[env(safe-area-inset-bottom,0px)]">
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2 rounded-lg border text-[13px] cursor-pointer text-center transition-colors hover:bg-sky-50"
+                style={{ borderColor: '#90CAF9', backgroundColor: '#fff', color: '#1565C0' }}
+              >
+                ปิด
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={printHandler}
+              className="flex-1 py-2 rounded-lg border-none text-[13px] cursor-pointer flex items-center justify-center gap-1.5 transition-colors hover:opacity-90"
+              style={{ backgroundColor: '#1976D2', color: '#fff' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 12H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
+              </svg>
+              พิมพ์
+            </button>
+          </div>
         </div>
       </div>
     </div>
