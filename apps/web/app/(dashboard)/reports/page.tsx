@@ -59,12 +59,6 @@ export default function ReportsPage() {
   } | null>(null)
 
   useEffect(() => {
-    if (printReceipt) {
-      setTimeout(() => window.print(), 200)
-    }
-  }, [printReceipt])
-
-  useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300)
     return () => clearTimeout(timer)
   }, [search])
