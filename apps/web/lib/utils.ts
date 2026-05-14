@@ -29,7 +29,7 @@ export function formatCurrency(amount: string | number) {
 }
 
 export function formatTime(date: string | Date) {
-  return dayjs(date).format('HH:mm')
+  return dayjs.tz(date).format('HH:mm')
 }
 
 export { dayjs }

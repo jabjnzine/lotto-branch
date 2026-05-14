@@ -14,7 +14,8 @@ import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatThaiDate, formatCurrency, formatTime } from '@/lib/utils'
 import { BET_TYPE_LABEL, BetType } from '@lotto/shared'
-import { Download, ChevronDown, ChevronRight, User, FileText, BarChart2, CheckCircle, XCircle, DollarSign, TrendingUp } from 'lucide-react'
+import { Receipt } from '@/components/shared/Receipt'
+import { Download, ChevronDown, ChevronRight, User, FileText, BarChart2, CheckCircle, XCircle, DollarSign, TrendingUp, Printer } from 'lucide-react'
 
 const roundStatusBadge: Record<string, { label: string; variant: 'success' | 'destructive' | 'warning' | 'default' }> = {
   open: { label: 'เปิด', variant: 'success' },
@@ -38,6 +39,17 @@ export default function ReportsPage() {
   const [expandedBetId, setExpandedBetId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [printReceipt, setPrintReceipt] = useState<{
+    billNo: string; drawDate: string; typeName: string; buyerName: string
+    items: Array<{ number: string; bet_type: string; amount: string }>
+    totalAmount: number; createdAt: string
+  } | null>(null)
+
+  useEffect(() => {
+    if (printReceipt) {
+      setTimeout(() => window.print(), 200)
+    }
+  }, [printReceipt])
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300)

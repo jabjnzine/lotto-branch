@@ -21,7 +21,7 @@ interface ReceiptProps {
 
 export function Receipt({ billNo, drawDate, typeName, buyerName, items, totalAmount, createdAt }: ReceiptProps) {
   return (
-    <div className="receipt-printable max-w-[300px] mx-auto text-sm" style={{ fontFamily: 'monospace' }}>
+    <div className="receipt-printable max-w-[300px] mx-auto text-sm p-4" style={{ fontFamily: 'monospace' }}>
       {/* Print styles */}
       <style>{`
         @media print {
