@@ -36,8 +36,8 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const { accessToken, profile } = await loginMutation.mutateAsync(values)
-      setAuth(accessToken, profile)
+      const { accessToken, refreshToken, profile } = await loginMutation.mutateAsync(values)
+      setAuth(accessToken, refreshToken, profile)
       router.push('/dashboard')
     } catch (err: unknown) {
       const message =

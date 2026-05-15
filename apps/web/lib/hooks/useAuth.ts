@@ -16,16 +16,16 @@ interface Profile {
 }
 
 export function useLogin() {
-  const setToken = useAuthStore((s) => s.setToken)
+  const setAuth = useAuthStore((s) => s.setAuth)
 
   return useMutation({
     mutationFn: async (dto: LoginDto) => {
-      const { accessToken } = await api
-        .post<{ accessToken: string }>('/auth/login', dto)
+      const { accessToken, refreshToken } = await api
+        .post<{ accessToken: string; refreshToken: string }>('/auth/login', dto)
         .then((r) => r.data)
-      setToken(accessToken)
       const profile = await api.get<Profile>('/auth/me').then((r) => r.data)
-      return { accessToken, profile }
+      setAuth(accessToken, refreshToken, profile)
+      return { accessToken, refreshToken, profile }
     },
   })
 }

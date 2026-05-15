@@ -3,15 +3,12 @@ import {
   Post,
   Get,
   Body,
-  Req,
-  Res,
   UseGuards,
   HttpCode,
   HttpStatus,
   UnauthorizedException,
 } from '@nestjs/common'
 import { IsEmail, IsString, MinLength } from 'class-validator'
-import { Request, Response } from 'express'
 import { AuthService } from './auth.service'
 import { JwtAuthGuard } from './jwt-auth.guard'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
@@ -25,45 +22,36 @@ class LoginDto {
   password!: string
 }
 
+class RefreshDto {
+  @IsString()
+  refreshToken!: string
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(
-    @Body() dto: LoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async login(@Body() dto: LoginDto) {
     const user = await this.authService.validateUser(dto.email, dto.password)
     const { accessToken, refreshToken } = await this.authService.login(user)
-
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/auth',
-    })
-
-    return { accessToken }
+    return { accessToken, refreshToken }
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Req() req: Request) {
-    const token = req.cookies['refresh_token'] as string
-    if (!token) {
+  async refresh(@Body() dto: RefreshDto) {
+    if (!dto.refreshToken) {
       throw new UnauthorizedException('ไม่มี refresh token')
     }
-    const { accessToken, user } = await this.authService.refresh(token)
-    return { accessToken, user }
+    const { accessToken, refreshToken, user } = await this.authService.refresh(dto.refreshToken)
+    return { accessToken, refreshToken, user }
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('refresh_token', { path: '/auth' })
+  logout() {
     return { message: 'ออกจากระบบสำเร็จ' }
   }
 

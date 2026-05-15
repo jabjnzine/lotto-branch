@@ -9,16 +9,16 @@ interface AuthUser {
 
 interface AuthStore {
   accessToken: string | null
+  refreshToken: string | null
   user: AuthUser | null
-  setToken: (token: string) => void
-  setAuth: (token: string, user: AuthUser) => void
+  setAuth: (accessToken: string, refreshToken: string, user: AuthUser) => void
   clearAuth: () => void
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
   accessToken: null,
+  refreshToken: null,
   user: null,
-  setToken: (accessToken) => set({ accessToken }),
-  setAuth: (accessToken, user) => set({ accessToken, user }),
-  clearAuth: () => set({ accessToken: null, user: null }),
+  setAuth: (accessToken, refreshToken, user) => set({ accessToken, refreshToken, user }),
+  clearAuth: () => set({ accessToken: null, refreshToken: null, user: null }),
 }))

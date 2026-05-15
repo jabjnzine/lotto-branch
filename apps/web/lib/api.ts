@@ -3,7 +3,6 @@ import { useAuthStore } from './stores/useAuthStore'
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001',
-  withCredentials: true,
 })
 
 let isRefreshing = false
@@ -47,15 +46,17 @@ api.interceptors.response.use(
       isRefreshing = true
 
       try {
+        const refreshToken = useAuthStore.getState().refreshToken
+        if (!refreshToken) {
+          throw new Error('No refresh token')
+        }
         const { data } = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/auth/refresh`,
-          {},
-          { withCredentials: true },
+          { refreshToken },
         )
-        const newToken = data.accessToken
-        useAuthStore.getState().setAuth(newToken, data.user)
-        processQueue(null, newToken)
-        originalRequest.headers.Authorization = `Bearer ${newToken}`
+        useAuthStore.getState().setAuth(data.accessToken, data.refreshToken, data.user)
+        processQueue(null, data.accessToken)
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError, null)

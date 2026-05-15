@@ -21,7 +21,7 @@ function Spinner() {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { user, setAuth } = useAuthStore()
+  const { user, setAuth, refreshToken } = useAuthStore()
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
@@ -34,9 +34,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     async function tryRefresh() {
       try {
-        const { data } = await api.post('/auth/refresh', {})
+        const storedRefreshToken = useAuthStore.getState().refreshToken
+        if (!storedRefreshToken) throw new Error('No refresh token')
+        const { data } = await api.post('/auth/refresh', { refreshToken: storedRefreshToken })
         if (!cancelled && data.accessToken) {
-          setAuth(data.accessToken, data.user)
+          setAuth(data.accessToken, data.refreshToken, data.user)
         }
       } catch {
         // interceptor handles redirect on 401
