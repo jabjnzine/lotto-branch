@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { UserRole } from '@lotto/shared'
 
 interface AuthUser {
@@ -15,10 +16,17 @@ interface AuthStore {
   clearAuth: () => void
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  accessToken: null,
-  refreshToken: null,
-  user: null,
-  setAuth: (accessToken, refreshToken, user) => set({ accessToken, refreshToken, user }),
-  clearAuth: () => set({ accessToken: null, refreshToken: null, user: null }),
-}))
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set) => ({
+      accessToken: null,
+      refreshToken: null,
+      user: null,
+      setAuth: (accessToken, refreshToken, user) => set({ accessToken, refreshToken, user }),
+      clearAuth: () => set({ accessToken: null, refreshToken: null, user: null }),
+    }),
+    {
+      name: 'auth-storage',
+    },
+  ),
+)

@@ -21,7 +21,8 @@ function Spinner() {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { user, setAuth, refreshToken } = useAuthStore()
+  const user = useAuthStore((s) => s.user)
+  const setAuth = useAuthStore((s) => s.setAuth)
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
@@ -53,12 +54,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (isChecking) return <Spinner />
+  useEffect(() => {
+    if (!isChecking && !user) {
+      router.push('/login')
+    }
+  }, [isChecking, user, router])
 
-  if (!user) {
-    router.push('/login')
-    return null
-  }
+  if (isChecking || !user) return <Spinner />
 
   return (
     <div className="flex min-h-screen bg-sky-50">
