@@ -23,6 +23,8 @@ export function useLogin() {
       const { accessToken, refreshToken } = await api
         .post<{ accessToken: string; refreshToken: string }>('/auth/login', dto)
         .then((r) => r.data)
+      // Store token before calling /me so the interceptor can attach it
+      setAuth(accessToken, refreshToken, { id: '', name: '', role: UserRole.ADMIN })
       const profile = await api.get<Profile>('/auth/me').then((r) => r.data)
       setAuth(accessToken, refreshToken, profile)
       return { accessToken, refreshToken, profile }
