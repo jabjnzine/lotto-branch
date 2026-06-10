@@ -25,15 +25,22 @@
   --radius: 0.75rem;
 }
 
+html,
 body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  font-family: var(--font-sans);
+  background-color: #000000;
+  color: #ffffff;
+  font-family: "Prompt", "Inter", sans-serif;
   font-size: 15px;
   line-height: 1.6;
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-background, #000000);
+  color: var(--color-foreground, #ffffff);
+  font-family: var(--font-sans, "Prompt", "Inter", sans-serif);
 }
 
 h1, h2, h3, h4 {

@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 interface AppLogoProps {
@@ -8,9 +7,9 @@ interface AppLogoProps {
 }
 
 const sizeMap = {
-  sm: 32,
-  md: 40,
-  lg: 56,
+  sm: 30,
+  md: 42,
+  lg: 64,
 } as const
 
 export function AppLogo({ size = 'md', showText = true, className }: AppLogoProps) {
@@ -19,16 +18,15 @@ export function AppLogo({ size = 'md', showText = true, className }: AppLogoProp
   return (
     <div className={cn('flex items-center gap-3 min-w-0', className)}>
       <div
-        className="relative shrink-0 overflow-hidden rounded-xl"
+        className="relative shrink-0 overflow-hidden rounded-full"
         style={{ width: px, height: px }}
       >
-        <Image
-          src="/logo.png"
+        <img
+          src="/logo.svg"
           alt="ระบบหวย"
           width={px}
           height={px}
-          className="h-full w-full object-cover"
-          priority
+          className="h-full w-full object-contain"
         />
       </div>
       {showText && (

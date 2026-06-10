@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center bg-background px-6 py-10">
-      <div className="mx-auto w-full max-w-sm animate-in fade-in zoom-in-95 duration-500">
+      <div className="mx-auto w-full max-w-sm">
         <div className="mb-10 flex justify-center">
           <AppLogo size="lg" showText={false} />
         </div>

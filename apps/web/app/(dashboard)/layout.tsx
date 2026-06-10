@@ -14,8 +14,9 @@ import api from '@/lib/api'
 
 function Spinner() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background text-foreground">
       <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <p className="text-sm text-muted-foreground">กำลังโหลดระบบ...</p>
     </div>
   )
 }
@@ -38,7 +39,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       try {
         const storedRefreshToken = useAuthStore.getState().refreshToken
         if (!storedRefreshToken) throw new Error('No refresh token')
-        const { data } = await api.post('/auth/refresh', { refreshToken: storedRefreshToken })
+        const { data } = await api.post(
+          '/auth/refresh',
+          { refreshToken: storedRefreshToken },
+          { timeout: 5_000 },
+        )
         if (!cancelled && data.accessToken) {
           setAuth(data.accessToken, data.refreshToken, data.user)
         }
@@ -57,11 +62,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!isChecking && !user) {
-      router.push('/login')
+      router.replace('/login')
     }
   }, [isChecking, user, router])
 
-  if (isChecking || !user) return <Spinner />
+  if (isChecking) return <Spinner />
+  if (!user) return null
 
   return (
     <div className="flex min-h-screen bg-background">

@@ -3,6 +3,7 @@ import { useAuthStore } from './stores/useAuthStore'
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001',
+  timeout: 10_000,
 })
 
 let isRefreshing = false
@@ -54,6 +55,7 @@ api.interceptors.response.use(
         const { data } = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/auth/refresh`,
           { refreshToken },
+          { timeout: 10_000 },
         )
         useAuthStore.getState().setAuth(data.accessToken, data.refreshToken, data.user)
         processQueue(null, data.accessToken)
