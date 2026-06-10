@@ -4,24 +4,33 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        default: 'bg-sky-600 text-white hover:bg-sky-700',
-        destructive: 'bg-red-600 text-white hover:bg-red-700',
-        outline: 'border border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-900',
-        secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200',
-        ghost: 'hover:bg-slate-100 hover:text-slate-900',
-        link: 'text-sky-600 underline-offset-4 hover:underline',
-        success: 'bg-green-600 text-white hover:bg-green-700',
-        warning: 'bg-amber-500 text-white hover:bg-amber-600',
+        default:
+          'rounded-full bg-primary text-primary-foreground hover:bg-primary-hover active:scale-[0.98]',
+        destructive:
+          'rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]',
+        outline:
+          'rounded-full border border-[#444444] bg-secondary text-foreground hover:border-primary/70 hover:bg-[#333333] active:scale-[0.98]',
+        secondary:
+          'rounded-xl border border-[#444444] bg-secondary text-foreground font-semibold hover:border-primary/60 hover:bg-[#333333] active:scale-[0.98]',
+        action:
+          'rounded-xl border border-[#444444] bg-secondary text-foreground font-semibold hover:border-primary/60 hover:bg-[#333333] active:scale-[0.98]',
+        ghost:
+          'rounded-lg text-foreground/90 font-medium hover:bg-accent hover:text-foreground',
+        link: 'text-primary font-semibold underline-offset-4 hover:underline',
+        success:
+          'rounded-full bg-success text-white hover:brightness-110 active:scale-[0.98]',
+        warning:
+          'rounded-full bg-warning text-primary-foreground hover:brightness-110 active:scale-[0.98]',
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-12 rounded-md px-8 text-base',
-        icon: 'h-10 w-10',
+        default: 'h-11 px-5 py-2',
+        sm: 'h-9 rounded-full px-4 text-xs',
+        lg: 'h-14 rounded-full px-8 text-base',
+        icon: 'h-11 w-11 rounded-xl',
       },
     },
     defaultVariants: {

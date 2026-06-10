@@ -4,13 +4,13 @@ import { cn } from '@/lib/utils'
 
 function Pulse({ className }: { className?: string }) {
   return (
-    <div className={cn('animate-pulse rounded bg-slate-200', className)} />
+    <div className={cn('animate-pulse rounded bg-muted', className)} />
   )
 }
 
 export function StatCardSkeleton() {
   return (
-    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="flex items-center gap-3">
         <Pulse className="h-10 w-10 rounded-lg" />
         <div className="space-y-2">

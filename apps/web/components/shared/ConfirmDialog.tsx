@@ -38,14 +38,14 @@ export function ConfirmDialog({
       <DialogContent className="max-w-sm p-0 [&>button]:hidden">
         <div className="flex flex-col items-center px-6 pt-8 pb-2">
           <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full mb-4 ${
-            variant === 'destructive' ? 'bg-red-100' : 'bg-sky-100'
+            variant === 'destructive' ? 'bg-destructive/15' : 'bg-primary/15'
           }`}>
             <AlertTriangle className={`h-7 w-7 ${
-              variant === 'destructive' ? 'text-red-500' : 'text-sky-500'
+              variant === 'destructive' ? 'text-destructive' : 'text-primary'
             }`} />
           </div>
           <DialogTitle className="text-center text-lg mb-1.5">{title}</DialogTitle>
-          <DialogDescription className="text-center text-base text-slate-600">
+          <DialogDescription className="text-center text-base text-muted-foreground">
             {message}
           </DialogDescription>
         </div>
@@ -61,11 +61,8 @@ export function ConfirmDialog({
           <Button
             onClick={onConfirm}
             disabled={loading}
-            className={`flex-1 ${
-              variant === 'destructive'
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : 'bg-[#0284c7] hover:bg-[#0369a1]'
-            }`}
+            variant={variant === 'destructive' ? 'destructive' : 'default'}
+            className="flex-1"
           >
             {loading ? 'กำลังดำเนินการ...' : confirmLabel}
           </Button>

@@ -37,4 +37,11 @@ export function formatTime(date: string | Date) {
   })
 }
 
+/** แสดงเวลานับถอยหลังแบบ นาทีรวม:วินาที เช่น 8585:34 */
+export function formatCountdownDisplay(secondsLeft: number): string {
+  const totalMin = Math.floor(secondsLeft / 60)
+  const s = secondsLeft % 60
+  return `${totalMin}:${String(s).padStart(2, '0')}`
+}
+
 export { dayjs }

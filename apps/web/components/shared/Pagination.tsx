@@ -13,7 +13,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
   if (totalPages <= 1) return null
 
   return (
-    <div className="flex items-center justify-center gap-2 p-3 border-t border-slate-100">
+    <div className="flex items-center justify-center gap-2 p-3 border-t border-border">
       <Button
         variant="outline"
         size="sm"
@@ -23,7 +23,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         <ChevronLeft className="h-4 w-4 mr-1" />
         ก่อนหน้า
       </Button>
-      <span className="text-sm text-slate-600 tabular-nums min-w-[4rem] text-center">
+      <span className="text-sm text-muted-foreground tabular-nums min-w-[4rem] text-center">
         {page} / {totalPages}
       </span>
       <Button

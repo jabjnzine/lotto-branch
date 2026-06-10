@@ -76,10 +76,10 @@ export default function SettingsPage() {
           <button
             key={lt.id}
             onClick={() => setSelectedTypeId(lt.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
               selectedTypeId === lt.id
-                ? 'bg-sky-600 text-white'
-                : 'bg-white border border-sky-200 text-slate-700 hover:bg-sky-50'
+                ? 'border border-primary bg-primary text-primary-foreground font-bold'
+                : 'border border-[#444444] bg-secondary text-foreground font-semibold hover:border-primary/70 hover:bg-[#333333] active:scale-[0.98]'
             }`}
           >
             {lt.name}
@@ -96,22 +96,22 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-sky-50 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Clock className="h-4 w-4 text-slate-400" />
+                <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
                     เวลาออกผล
                   </div>
                   <input
                     type="time"
                     defaultValue={selectedType?.draw_time}
                     onBlur={(e) => handleSettingChange('draw_time', e.target.value)}
-                    className="h-9 border border-sky-200 rounded-md px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="h-9 border border-border rounded-md px-3 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-sky-50 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Timer className="h-4 w-4 text-slate-400" />
+                <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Timer className="h-4 w-4 text-muted-foreground" />
                     ปิดรับก่อนออกผล
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -122,15 +122,15 @@ export default function SettingsPage() {
                         const val = parseInt(e.target.value, 10)
                         if (!isNaN(val) && val > 0) handleSettingChange('close_before_minutes', val)
                       }}
-                      className="w-20 h-9 border border-sky-200 rounded-md px-2 text-sm text-right font-mono bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      className="w-20 h-9 border border-border rounded-md px-2 text-sm text-right font-mono bg-card focus:outline-none focus:ring-2 focus:ring-primary"
                     />
-                    <span className="text-sm text-slate-400">นาที</span>
+                    <span className="text-sm text-muted-foreground">นาที</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-sky-50 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Power className="h-4 w-4 text-slate-400" />
+                <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Power className="h-4 w-4 text-muted-foreground" />
                     สถานะ
                   </div>
                   <Button
@@ -158,8 +158,8 @@ export default function SettingsPage() {
                     (pr: { bet_type: string }) => pr.bet_type === betType,
                   )
                   return (
-                    <div key={betType} className="flex items-center justify-between p-3 bg-sky-50 rounded-lg">
-                      <span className="text-sm font-medium text-slate-700">
+                    <div key={betType} className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
+                      <span className="text-sm font-medium text-foreground">
                         {BET_TYPE_LABEL[betType]}
                       </span>
                       {rate ? (
@@ -168,17 +168,17 @@ export default function SettingsPage() {
                             defaultValue={rate.max_per_number ?? ''}
                             onBlur={(e) => handleMaxPerNumberChange(rate.id, e.target.value)}
                             placeholder="วงเงิน"
-                            className="w-24 h-8 border border-sky-200 rounded px-2 text-xs text-right font-mono bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            className="w-24 h-8 border border-border rounded px-2 text-xs text-right font-mono bg-card focus:outline-none focus:ring-2 focus:ring-primary"
                           />
                           <input
                             defaultValue={rate.payout_rate}
                             onBlur={(e) => handleRateChange(rate.id, e.target.value)}
                             placeholder="อัตราจ่าย"
-                            className="w-20 h-8 border border-sky-200 rounded px-2 text-sm text-right font-mono bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            className="w-20 h-8 border border-border rounded px-2 text-sm text-right font-mono bg-card focus:outline-none focus:ring-2 focus:ring-primary"
                           />
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-400">ไม่มีข้อมูล</span>
+                        <span className="text-xs text-muted-foreground">ไม่มีข้อมูล</span>
                       )}
                     </div>
                   )
@@ -191,8 +191,8 @@ export default function SettingsPage() {
 
       {!selectedTypeId && (
         <Card>
-          <CardContent className="py-12 text-center text-slate-400">
-            <Settings className="h-10 w-10 mx-auto mb-3 text-slate-300" />
+          <CardContent className="py-12 text-center text-muted-foreground">
+            <Settings className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
             เลือกประเภทหวยเพื่อดูการตั้งค่า
           </CardContent>
         </Card>

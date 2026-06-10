@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Pagination } from '@/components/shared/Pagination'
 import { SearchInput } from '@/components/shared/SearchInput'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { LotteryTypeSelector } from '@/components/lottery/LotteryTypeSelector'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -126,39 +127,27 @@ export default function ReportsPage() {
         )}
       </PageHeader>
 
-      {/* Type Selector */}
-      <div className="flex flex-wrap gap-2 rounded-lg border border-sky-200 bg-white p-3 shadow-sm">
-        <button
-          onClick={() => {
-            setSelectedTypeId('__all__')
-            setSelectedRoundId(null)
-          }}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            selectedTypeId === '__all__'
-              ? 'bg-sky-600 text-white'
-              : 'bg-white border border-sky-200 text-slate-700 hover:bg-sky-50'
-          }`}
-        >
-          ทั้งหมด
-        </button>
-        {lotteryTypes?.map((lt) => (
-          <button
-            key={lt.id}
-            onClick={() => {
-              setSelectedTypeId(lt.id)
+      {lotteryTypes && lotteryTypes.length > 0 && (
+        <LotteryTypeSelector
+          lotteryTypes={lotteryTypes}
+          selectedTypeId={selectedTypeId === '__all__' ? null : selectedTypeId}
+          leadingOption={{
+            id: '__all__',
+            label: 'ทั้งหมด',
+            subtitle: 'ทุกประเภทหวย',
+            selected: selectedTypeId === '__all__',
+            onSelect: () => {
+              setSelectedTypeId('__all__')
               setSelectedRoundId(null)
-              setPage(1)
-            }}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              selectedTypeId === lt.id
-                ? 'bg-sky-600 text-white'
-                : 'bg-white border border-sky-200 text-slate-700 hover:bg-sky-50'
-            }`}
-          >
-            {lt.name}
-          </button>
-        ))}
-      </div>
+            },
+          }}
+          onSelect={(id) => {
+            setSelectedTypeId(id)
+            setSelectedRoundId(null)
+            setPage(1)
+          }}
+        />
+      )}
 
       {/* All Types Unified View */}
       {selectedTypeId === '__all__' && (
@@ -169,22 +158,22 @@ export default function ReportsPage() {
             <>
               {/* Grand Total KPI */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
-                  <p className="text-xs text-slate-400">วันที่</p>
-                  <p className="text-sm font-semibold text-slate-900 mt-0.5">
+                <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                  <p className="text-xs text-muted-foreground">วันที่</p>
+                  <p className="text-sm font-semibold text-foreground mt-0.5">
                     {formatThaiDate(todayAllBets.date)}
                   </p>
                 </div>
-                <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
-                  <p className="text-xs text-slate-400">จำนวนบิลทั้งหมด</p>
-                  <p className="text-xl font-bold text-slate-900 tabular-nums mt-0.5">
-                    {todayAllBets.totalBets.toLocaleString()} <span className="text-sm font-normal text-slate-500">บิล</span>
+                <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                  <p className="text-xs text-muted-foreground">จำนวนบิลทั้งหมด</p>
+                  <p className="text-xl font-bold text-foreground tabular-nums mt-0.5">
+                    {todayAllBets.totalBets.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">บิล</span>
                   </p>
                 </div>
-                <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
-                  <p className="text-xs text-slate-400">ยอดรับรวมทั้งวัน</p>
-                  <p className="text-xl font-bold text-sky-600 tabular-nums mt-0.5">
-                    {formatCurrency(todayAllBets.totalAmount)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                  <p className="text-xs text-muted-foreground">ยอดรับรวมทั้งวัน</p>
+                  <p className="text-xl font-bold text-primary tabular-nums mt-0.5">
+                    {formatCurrency(todayAllBets.totalAmount)} <span className="text-sm font-normal text-muted-foreground">บาท</span>
                   </p>
                 </div>
               </div>
@@ -202,11 +191,11 @@ export default function ReportsPage() {
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Badge variant="secondary" className="text-xs">{group.typeName}</Badge>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-muted-foreground">
                           {group.betCount} บิล · {group.itemCount} รายการ
                         </span>
                       </CardTitle>
-                      <span className="text-sm font-bold text-sky-600 tabular-nums">
+                      <span className="text-sm font-bold text-primary tabular-nums">
                         {formatCurrency(group.totalAmount)} บาท
                       </span>
                     </div>
@@ -215,31 +204,31 @@ export default function ReportsPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-sky-200 bg-sky-50">
-                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">เวลา</th>
-                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium hidden sm:table-cell">คนซื้อ</th>
-                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium hidden sm:table-cell">หวย</th>
-                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">เลข</th>
-                            <th className="text-left px-3 py-2 text-xs text-slate-500 font-medium">ประเภท</th>
-                            <th className="text-right px-3 py-2 text-xs text-slate-500 font-medium">ยอด</th>
-                            <th className="text-center px-3 py-2 text-xs text-slate-500 font-medium">สถานะ</th>
-                            <th className="text-center px-3 py-2 text-xs text-slate-500 font-medium w-10" />
+                          <tr className="border-b border-border bg-primary/10">
+                            <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">เวลา</th>
+                            <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium hidden sm:table-cell">คนซื้อ</th>
+                            <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium hidden sm:table-cell">หวย</th>
+                            <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">เลข</th>
+                            <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">ประเภท</th>
+                            <th className="text-right px-3 py-2 text-xs text-muted-foreground font-medium">ยอด</th>
+                            <th className="text-center px-3 py-2 text-xs text-muted-foreground font-medium">สถานะ</th>
+                            <th className="text-center px-3 py-2 text-xs text-muted-foreground font-medium w-10" />
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-border">
                           {group.bets.map((bet) => {
                             const st = statusLabel[bet.status] ?? { label: bet.status, variant: 'default' as const }
                             return bet.items.map((item, i) => (
-                              <tr key={`${bet.id}-${item.id}`} className={i === 0 ? 'border-t-2 border-sky-100' : ''}>
-                                <td className="px-3 py-1.5 text-xs text-slate-500">
+                              <tr key={`${bet.id}-${item.id}`} className={i === 0 ? 'border-t-2 border-border' : ''}>
+                                <td className="px-3 py-1.5 text-xs text-muted-foreground">
                                   {i === 0 ? formatTime(bet.created_at) : ''}
                                 </td>
-                                <td className="px-3 py-1.5 text-xs text-slate-600 hidden sm:table-cell">
+                                <td className="px-3 py-1.5 text-xs text-muted-foreground hidden sm:table-cell">
                                   {i === 0 ? (bet.buyer_name ?? '—') : ''}
                                 </td>
                                 <td className="px-3 py-1.5 hidden sm:table-cell">
                                   {i === 0 && (
-                                    <Badge className="text-[10px] bg-sky-100 text-sky-700 border-sky-200 font-medium">
+                                    <Badge className="text-[10px] bg-primary/15 text-primary border-border font-medium">
                                       {group.typeName}
                                     </Badge>
                                   )}
@@ -283,7 +272,7 @@ export default function ReportsPage() {
                                           createdAt: bet.created_at,
                                         })
                                       }}
-                                      className="text-slate-300 hover:text-sky-600 transition-colors"
+                                      className="text-muted-foreground/50 hover:text-primary transition-colors"
                                       title="พิมพ์ใบเสร็จ"
                                     >
                                       <Printer className="h-3.5 w-3.5" />
@@ -301,7 +290,7 @@ export default function ReportsPage() {
               ))}
 
               {todayAllBets.groups.length === 0 && (
-                <p className="text-center text-sm text-slate-400 py-12">ไม่มีบิลในวันนี้</p>
+                <p className="text-center text-sm text-muted-foreground py-12">ไม่มีบิลในวันนี้</p>
               )}
 
               {todayAllBets.totalPages > 1 && (
@@ -318,7 +307,7 @@ export default function ReportsPage() {
           {/* Round List */}
           <Card className="md:col-span-1">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs text-slate-500">เลือกงวด</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground">เลือกงวด</CardTitle>
             </CardHeader>
             <CardContent className="p-0 max-h-96 overflow-y-auto">
               {sortedRounds.map((round) => {
@@ -331,9 +320,9 @@ export default function ReportsPage() {
                       setPage(1)
                       setExpandedBetId(null)
                     }}
-                    className={`w-full text-left px-3 py-2.5 border-b border-slate-50 text-sm hover:bg-slate-50 transition-colors ${
+                    className={`w-full text-left px-3 py-2.5 border-b border-border text-sm hover:bg-accent transition-colors ${
                       selectedRoundId === round.id
-                        ? 'bg-sky-50 text-sky-700 font-medium border-l-2 border-l-sky-500'
+                        ? 'bg-primary/10 text-primary font-medium border-l-2 border-l-primary'
                         : ''
                     }`}
                   >
@@ -343,13 +332,13 @@ export default function ReportsPage() {
                         {rStatus.label}
                       </Badge>
                     </div>
-                    <div className="text-xs text-slate-400 mt-0.5">{round.lottery_type?.name}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{round.lottery_type?.name}</div>
                   </button>
                 )
               })}
               {(!rounds || rounds.length === 0) && (
-                <p className="text-center text-xs text-slate-400 py-8">
-                  <FileText className="h-5 w-5 mx-auto mb-1 text-slate-300" />
+                <p className="text-center text-xs text-muted-foreground py-8">
+                  <FileText className="h-5 w-5 mx-auto mb-1 text-muted-foreground/50" />
                   ไม่มีงวด
                 </p>
               )}
@@ -359,8 +348,8 @@ export default function ReportsPage() {
           {/* Bets Table */}
           <div className="md:col-span-3">
             {!selectedRoundId && !betsLoading && (
-              <div className="flex flex-col items-center justify-center h-48 text-slate-400 text-sm bg-white rounded-lg border border-slate-200">
-                <BarChart2 className="h-8 w-8 mb-2 text-slate-300" />
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground text-sm bg-card rounded-lg border border-border">
+                <BarChart2 className="h-8 w-8 mb-2 text-muted-foreground/50" />
                 เลือกงวดเพื่อดูรายงาน
               </div>
             )}
@@ -372,23 +361,23 @@ export default function ReportsPage() {
                 {/* Round Summary */}
                 {selectedRound && (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
-                      <p className="text-xs text-slate-400">งวด</p>
-                      <p className="text-sm font-semibold text-slate-900 mt-0.5">
+                    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                      <p className="text-xs text-muted-foreground">งวด</p>
+                      <p className="text-sm font-semibold text-foreground mt-0.5">
                         {formatThaiDate(selectedRound.draw_date)}
                       </p>
-                      <p className="text-xs text-slate-400 mt-0.5">{selectedRound.lottery_type?.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{selectedRound.lottery_type?.name}</p>
                     </div>
-                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
-                      <p className="text-xs text-slate-400">จำนวนบิล</p>
-                      <p className="text-xl font-bold text-slate-900 tabular-nums mt-0.5">
-                        {betsData.total.toLocaleString()} <span className="text-sm font-normal text-slate-500">รายการ</span>
+                    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                      <p className="text-xs text-muted-foreground">จำนวนบิล</p>
+                      <p className="text-xl font-bold text-foreground tabular-nums mt-0.5">
+                        {betsData.total.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">รายการ</span>
                       </p>
                     </div>
-                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
-                      <p className="text-xs text-slate-400">ยอดรับรวม</p>
-                      <p className="text-xl font-bold text-sky-600 tabular-nums mt-0.5">
-                        {formatCurrency(totalAmount)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                      <p className="text-xs text-muted-foreground">ยอดรับรวม</p>
+                      <p className="text-xl font-bold text-primary tabular-nums mt-0.5">
+                        {formatCurrency(totalAmount)} <span className="text-sm font-normal text-muted-foreground">บาท</span>
                       </p>
                     </div>
                   </div>
@@ -415,22 +404,22 @@ export default function ReportsPage() {
                         {roundSummary.lostCount} <span className="text-sm font-normal">บิล</span>
                       </p>
                     </div>
-                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
                       <div className="flex items-center gap-2 mb-1">
                         <DollarSign className="h-4 w-4 text-red-500" />
-                        <p className="text-xs text-slate-400">ยอดจ่าย</p>
+                        <p className="text-xs text-muted-foreground">ยอดจ่าย</p>
                       </div>
                       <p className="text-xl font-bold text-red-500 tabular-nums">
-                        {formatCurrency(roundSummary.totalPayout)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                        {formatCurrency(roundSummary.totalPayout)} <span className="text-sm font-normal text-muted-foreground">บาท</span>
                       </p>
                     </div>
-                    <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+                    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
                       <div className="flex items-center gap-2 mb-1">
-                        <TrendingUp className="h-4 w-4 text-sky-600" />
-                        <p className="text-xs text-slate-400">กำไรงวดนี้</p>
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        <p className="text-xs text-muted-foreground">กำไรงวดนี้</p>
                       </div>
-                      <p className="text-xl font-bold text-sky-600 tabular-nums">
-                        {formatCurrency(roundSummary.profit)} <span className="text-sm font-normal text-slate-500">บาท</span>
+                      <p className="text-xl font-bold text-primary tabular-nums">
+                        {formatCurrency(roundSummary.profit)} <span className="text-sm font-normal text-muted-foreground">บาท</span>
                       </p>
                     </div>
                   </div>
@@ -450,7 +439,7 @@ export default function ReportsPage() {
                       <CardTitle className="text-sm">
                         รายการบิล ({betsData.total} รายการ)
                       </CardTitle>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-muted-foreground">
                         หน้า {page} / {betsData.totalPages}
                       </span>
                     </div>
@@ -459,16 +448,16 @@ export default function ReportsPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-sky-200 bg-sky-50">
+                          <tr className="border-b border-border bg-primary/10">
                             <th className="w-8 px-3 py-2.5" />
-                            <th className="text-left px-3 py-2.5 text-xs text-slate-500 font-medium">เวลา</th>
-                            <th className="text-left px-3 py-2.5 text-xs text-slate-500 font-medium">คนซื้อ</th>
-                            <th className="text-center px-3 py-2.5 text-xs text-slate-500 font-medium">รายการ</th>
-                            <th className="text-right px-3 py-2.5 text-xs text-slate-500 font-medium">ยอด</th>
-                            <th className="text-center px-3 py-2.5 text-xs text-slate-500 font-medium">สถานะ</th>
+                            <th className="text-left px-3 py-2.5 text-xs text-muted-foreground font-medium">เวลา</th>
+                            <th className="text-left px-3 py-2.5 text-xs text-muted-foreground font-medium">คนซื้อ</th>
+                            <th className="text-center px-3 py-2.5 text-xs text-muted-foreground font-medium">รายการ</th>
+                            <th className="text-right px-3 py-2.5 text-xs text-muted-foreground font-medium">ยอด</th>
+                            <th className="text-center px-3 py-2.5 text-xs text-muted-foreground font-medium">สถานะ</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-border">
                           {betsData.items.map((bet: {
                             id: string
                             created_at: string
@@ -490,35 +479,35 @@ export default function ReportsPage() {
                             return (
                               <React.Fragment key={bet.id}>
                                 <tr
-                                  className="hover:bg-slate-50 cursor-pointer transition-colors"
+                                  className="hover:bg-accent cursor-pointer transition-colors"
                                   onClick={() => setExpandedBetId(isExpanded ? null : bet.id)}
                                 >
-                                  <td className="px-3 py-2.5 text-slate-400">
+                                  <td className="px-3 py-2.5 text-muted-foreground">
                                     {isExpanded ? (
                                       <ChevronDown className="h-4 w-4" />
                                     ) : (
                                       <ChevronRight className="h-4 w-4" />
                                     )}
                                   </td>
-                                  <td className="px-3 py-2.5 text-xs text-slate-500">
+                                  <td className="px-3 py-2.5 text-xs text-muted-foreground">
                                     {formatTime(bet.created_at)}
                                   </td>
                                   <td className="px-3 py-2.5">
                                     <div className="flex items-center gap-1.5">
-                                      <User className="h-3.5 w-3.5 text-slate-300" />
-                                      <span className="text-slate-700">
+                                      <User className="h-3.5 w-3.5 text-muted-foreground/50" />
+                                      <span className="text-foreground">
                                         {bet.buyer_name ?? '—'}
                                       </span>
                                     </div>
                                     {bet.note && (
-                                      <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                                      <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                                         <FileText className="h-3 w-3" />
                                         {bet.note}
                                       </p>
                                     )}
                                   </td>
                                   <td className="px-3 py-2.5 text-center">
-                                    <span className="text-xs text-slate-500">{itemCount} รายการ</span>
+                                    <span className="text-xs text-muted-foreground">{itemCount} รายการ</span>
                                   </td>
                                   <td className="px-3 py-2.5 text-right font-medium tabular-nums">
                                     {formatCurrency(bet.total_amount)}
@@ -533,22 +522,22 @@ export default function ReportsPage() {
                                 {/* Expanded Items */}
                                 {isExpanded && bet.items && bet.items.length > 0 && (
                                   <tr key={`${bet.id}-items`}>
-                                    <td colSpan={6} className="px-0 py-0 bg-slate-50/60">
-                                      <div className="px-8 py-3 border-b border-slate-100">
+                                    <td colSpan={6} className="px-0 py-0 bg-muted/60">
+                                      <div className="px-8 py-3 border-b border-border">
                                         <table className="w-full text-sm">
                                           <thead>
-                                            <tr className="text-xs text-slate-400">
+                                            <tr className="text-xs text-muted-foreground">
                                               <th className="text-left py-1 font-normal">#</th>
                                               <th className="text-left py-1 font-normal">เลข</th>
                                               <th className="text-left py-1 font-normal">ประเภท</th>
                                               <th className="text-right py-1 font-normal">ยอด</th>
                                             </tr>
                                           </thead>
-                                          <tbody className="divide-y divide-slate-100">
+                                          <tbody className="divide-y divide-border">
                                             {bet.items.map((item, idx) => (
                                               <tr key={item.id}>
-                                                <td className="py-1.5 text-xs text-slate-400">{idx + 1}</td>
-                                                <td className="py-1.5 font-mono font-semibold text-slate-800">
+                                                <td className="py-1.5 text-xs text-muted-foreground">{idx + 1}</td>
+                                                <td className="py-1.5 font-mono font-semibold text-foreground">
                                                   {item.number}
                                                 </td>
                                                 <td className="py-1.5">
@@ -565,7 +554,7 @@ export default function ReportsPage() {
                                         </table>
                                       </div>
                                       {bet.status === 'pending' && (
-                                        <div className="px-8 py-2 border-t border-slate-100 flex justify-end gap-2">
+                                        <div className="px-8 py-2 border-t border-border flex justify-end gap-2">
                                           <Button
                                             variant="ghost"
                                             size="sm"
@@ -590,7 +579,7 @@ export default function ReportsPage() {
                                                 createdAt: bet.created_at,
                                               })
                                             }}
-                                            className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 text-xs"
+                                            className="text-primary hover:text-primary hover:bg-primary/10 text-xs"
                                           >
                                             <Printer className="h-3.5 w-3.5 mr-1" />
                                             พิมพ์ใบเสร็จ
@@ -609,7 +598,7 @@ export default function ReportsPage() {
                                         </div>
                                       )}
                                       {bet.status !== 'pending' && (
-                                        <div className="px-8 py-2 border-t border-slate-100 flex justify-end">
+                                        <div className="px-8 py-2 border-t border-border flex justify-end">
                                           <Button
                                             variant="ghost"
                                             size="sm"
@@ -634,7 +623,7 @@ export default function ReportsPage() {
                                                 createdAt: bet.created_at,
                                               })
                                             }}
-                                            className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 text-xs"
+                                            className="text-primary hover:text-primary hover:bg-primary/10 text-xs"
                                           >
                                             <Printer className="h-3.5 w-3.5 mr-1" />
                                             พิมพ์ใบเสร็จ
@@ -682,7 +671,7 @@ export default function ReportsPage() {
       >
         <DialogContent
           overlayClassName="max-sm:hidden"
-          className="w-full max-w-none min-w-0 gap-0 border-0 !bg-transparent p-0 !shadow-none rounded-none max-sm:!top-0 max-sm:!left-0 max-sm:!right-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:!max-w-none max-sm:!translate-x-0 max-sm:!translate-y-0 max-sm:!rounded-none max-sm:!max-h-none max-sm:overflow-hidden max-sm:overscroll-contain max-sm:bg-[#E3F2FD] max-sm:flex max-sm:flex-col sm:left-1/2 sm:top-1/2 sm:w-fit sm:max-w-[min(100vw,360px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-none [&>button]:hidden"
+          className="w-full max-w-none min-w-0 gap-0 border-0 !bg-transparent p-0 !shadow-none rounded-none max-sm:!top-0 max-sm:!left-0 max-sm:!right-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:!max-w-none max-sm:!translate-x-0 max-sm:!translate-y-0 max-sm:!rounded-none max-sm:!max-h-none max-sm:overflow-hidden max-sm:overscroll-contain max-sm:bg-background max-sm:flex max-sm:flex-col sm:left-1/2 sm:top-1/2 sm:w-fit sm:max-w-[min(100vw,360px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-none [&>button]:hidden"
         >
           <DialogTitle className="sr-only">ใบเสร็จ</DialogTitle>
           <DialogDescription className="sr-only">รายละเอียดใบเสร็จรับเงิน</DialogDescription>

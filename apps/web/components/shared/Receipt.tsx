@@ -147,7 +147,7 @@ export function Receipt({
             {items.map((item, i) => (
               <div
                 key={i}
-                className="flex justify-between items-center bg-white rounded-[10px] px-3 py-2.5 border"
+                className="flex justify-between items-center bg-card rounded-[10px] px-3 py-2.5 border"
                 style={{ borderColor: '#BBDEFB' }}
               >
                 <div className="flex gap-2.5 items-center min-w-0 flex-1">
@@ -199,7 +199,7 @@ export function Receipt({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-2 rounded-lg border text-[13px] cursor-pointer text-center transition-colors hover:bg-sky-50"
+                className="flex-1 py-2 rounded-lg border text-[13px] cursor-pointer text-center transition-colors hover:bg-primary/10"
                 style={{ borderColor: '#90CAF9', backgroundColor: '#fff', color: '#1565C0' }}
               >
                 ปิด

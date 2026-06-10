@@ -7,6 +7,7 @@ import { useResult, useSaveResult } from '@/lib/hooks/useResults'
 import { useFetchThaiResult, useFetchLaoResult } from '@/lib/hooks/useRounds'
 import { useCalculateWinners } from '@/lib/hooks/useBets'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { LotteryTypeSelector } from '@/components/lottery/LotteryTypeSelector'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -92,7 +93,7 @@ function ResultForm({
     <div className="space-y-3">
       {(isThaiFull || isLaoFull) && (
         <div>
-          <label className="text-xs text-slate-500 block mb-1">
+          <label className="text-xs text-muted-foreground block mb-1">
             {isThaiFull ? 'รางวัลที่ 1 (6 หลัก)' : 'เลขท้าย 4 ตัว'}
           </label>
           <input
@@ -100,12 +101,12 @@ function ResultForm({
             onChange={(e) => setFirstPrize(e.target.value.replace(/\D/g, '').slice(0, isThaiFull ? 6 : 4))}
             inputMode="numeric"
             placeholder={isThaiFull ? '------' : '----'}
-            className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-sky-500"
+            className="w-full h-12 border-2 border-border rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-primary"
           />
           {isLaoFull && firstPrize.length === 4 && (
-            <div className="flex gap-4 mt-2 text-xs text-slate-500">
-              <span>3 ตัวบน = <strong className="text-slate-800 font-mono">{firstPrize.slice(-3)}</strong></span>
-              <span>2 ตัวบน = <strong className="text-slate-800 font-mono">{firstPrize.slice(-2)}</strong></span>
+            <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+              <span>3 ตัวบน = <strong className="text-foreground font-mono">{firstPrize.slice(-3)}</strong></span>
+              <span>2 ตัวบน = <strong className="text-foreground font-mono">{firstPrize.slice(-2)}</strong></span>
             </div>
           )}
         </div>
@@ -113,32 +114,32 @@ function ResultForm({
       {isThaiFull && (
         <>
           <div>
-            <label className="text-xs text-slate-500 block mb-1">
+            <label className="text-xs text-muted-foreground block mb-1">
               เลขหน้า 3 ตัว (คั่นด้วยช่องว่างหรือจุลภาค)
             </label>
             <input
               value={threeFront}
               onChange={(e) => setThreeFront(e.target.value)}
               placeholder="เช่น 267, 318"
-              className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-sky-500"
+              className="w-full h-12 border-2 border-border rounded-lg px-4 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-primary"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-500 block mb-1">
+            <label className="text-xs text-muted-foreground block mb-1">
               เลขท้าย 3 ตัว (คั่นด้วยช่องว่างหรือจุลภาค)
             </label>
             <input
               value={threeBack}
               onChange={(e) => setThreeBack(e.target.value)}
               placeholder="เช่น 065, 153"
-              className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-sky-500"
+              className="w-full h-12 border-2 border-border rounded-lg px-4 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-primary"
             />
           </div>
         </>
       )}
       {isLao52 && (
         <div>
-          <label className="text-xs text-slate-500 block mb-1">ผล 5 ชุด 2 ตัว</label>
+          <label className="text-xs text-muted-foreground block mb-1">ผล 5 ชุด 2 ตัว</label>
           <div className="grid grid-cols-5 gap-2">
             {[
               { val: twoDigit1, set: setTwoDigit1 },
@@ -154,7 +155,7 @@ function ResultForm({
                 inputMode="numeric"
                 placeholder="--"
                 maxLength={2}
-                className="h-12 border-2 border-slate-200 rounded-lg px-2 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-sky-500"
+                className="h-12 border-2 border-border rounded-lg px-2 text-xl font-mono text-center tracking-widest focus:outline-none focus:border-primary"
               />
             ))}
           </div>
@@ -162,18 +163,18 @@ function ResultForm({
       )}
       {!isLao52 && (
       <div>
-        <label className="text-xs text-slate-500 block mb-1">2 ตัวล่าง</label>
+        <label className="text-xs text-muted-foreground block mb-1">2 ตัวล่าง</label>
         <input
           value={twoLast}
           onChange={(e) => setTwoLast(e.target.value.replace(/\D/g, '').slice(0, 2))}
           inputMode="numeric"
           placeholder="--"
-          className="w-full h-12 border-2 border-slate-200 rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-sky-500"
+          className="w-full h-12 border-2 border-border rounded-lg px-4 text-2xl font-mono text-center tracking-[0.5em] focus:outline-none focus:border-primary"
         />
       </div>
       )}
       {result && (
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Badge variant={result.is_official ? 'success' : 'secondary'}>
             {result.is_official ? 'Official' : 'Manual'}
           </Badge>
@@ -258,25 +259,16 @@ export default function ResultsPage() {
     <div className="space-y-6 max-w-6xl mx-auto">
       <PageHeader title="ผลหวย" />
 
-      {/* Type Selector */}
-      <div className="flex flex-wrap gap-2 rounded-lg border border-sky-200 bg-white p-3 shadow-sm">
-        {lotteryTypes?.map((lt) => (
-          <button
-            key={lt.id}
-            onClick={() => {
-              setSelectedTypeId(lt.id)
-              setSelectedRoundId(null)
-            }}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              selectedTypeId === lt.id
-                ? 'bg-sky-600 text-white'
-                : 'bg-white border border-sky-200 text-slate-700 hover:bg-sky-50'
-            }`}
-          >
-            {lt.name}
-          </button>
-        ))}
-      </div>
+      {lotteryTypes && lotteryTypes.length > 0 && (
+        <LotteryTypeSelector
+          lotteryTypes={lotteryTypes}
+          selectedTypeId={selectedTypeId}
+          onSelect={(id) => {
+            setSelectedTypeId(id)
+            setSelectedRoundId(null)
+          }}
+        />
+      )}
 
       {selectedType?.code === 'TH' && (
         <Button
@@ -323,8 +315,8 @@ export default function ResultsPage() {
                   <button
                     key={round.id}
                     onClick={() => setSelectedRoundId(round.id)}
-                    className={`w-full text-left px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors ${
-                      selectedRoundId === round.id ? 'bg-sky-50 border-l-2 border-l-sky-500' : ''
+                    className={`w-full text-left px-4 py-3 border-b border-border hover:bg-accent transition-colors ${
+                      selectedRoundId === round.id ? 'bg-primary/10 border-l-2 border-l-primary' : ''
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -333,13 +325,13 @@ export default function ResultsPage() {
                         {rStatus.label}
                       </Badge>
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{round.lottery_type?.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{round.lottery_type?.name}</p>
                   </button>
                 )
               })}
               {(!rounds || rounds.length === 0) && (
-                <p className="text-sm text-slate-400 text-center py-6">
-                  <Trophy className="h-6 w-6 mx-auto mb-1 text-slate-300" />
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  <Trophy className="h-6 w-6 mx-auto mb-1 text-muted-foreground/50" />
                   ไม่มีงวด
                 </p>
               )}

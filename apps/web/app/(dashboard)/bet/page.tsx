@@ -9,7 +9,7 @@ import { useBetStore } from '@/lib/stores/useBetStore'
 import { useHouses } from '@/lib/hooks/useHouses'
 import { HouseSelect } from '@/components/ui/select-ark'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { Countdown } from '@/components/shared/Countdown'
+import { LotteryTypeSelector } from '@/components/lottery/LotteryTypeSelector'
 import { Receipt } from '@/components/shared/Receipt'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -29,7 +29,7 @@ import {
   type BetTypeGroupId,
   groupBetTypesForUi,
 } from '@lotto/shared'
-import { cn, dayjs, formatCurrency, formatThaiDate } from '@/lib/utils'
+import { cn, dayjs, formatCurrency } from '@/lib/utils'
 import { useToastStore } from '@/lib/stores/useToastStore'
 import { downloadHtmlAsXls } from '@/lib/export-utils'
 import {
@@ -47,7 +47,7 @@ import {
 const TABLE_MIN_ROWS = 10
 /** ความสูงสูงสุดของตาราง — ถ้ามีรายการมาก ให้เลื่อนดูภายในกรอบ */
 const TABLE_BODY_MAX_H = 'min(28rem, 55vh)'
-const POS_BLUE = '#0284c7'
+const POS_BLUE = '#ff9824'
 
 /** แสดงอัตราจ่ายในช่องมุมขวา — ค่าว่างคืน em dash */
 function formatRateBox(v: string | number | undefined | null): string {
@@ -315,7 +315,7 @@ export default function BetPage() {
       <h3>${draftBillNo}</h3>
       <p>งวด: ${drawDateLabel} | ${selectedType?.name ?? ''} | ลูกค้า: ${buyerName || 'ทั่วไป'}</p>
       <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;max-width:400px">
-        <thead><tr style="background:#0284c7;color:white">
+        <thead><tr style="background:#ff9824;color:white">
           <th>#</th><th>เลข</th><th>ประเภท</th><th>ยอด (บาท)</th>
         </tr></thead>
         <tbody>${rows}</tbody>
@@ -374,77 +374,48 @@ export default function BetPage() {
     <div className="mx-auto max-w-6xl space-y-4 pb-6">
       <PageHeader title="คีย์หวย" />
 
-      {/* ประเภทหวย — แท็บด้านบน */}
-      <div className="flex flex-wrap gap-2 rounded-lg border border-sky-200 bg-white p-3 shadow-sm">
-        {lotteryTypes?.map((lt) => (
-          <button
-            key={lt.id}
-            type="button"
-            onClick={() => {
-              setSelectedTypeId(lt.id)
-              const types = LOTTERY_TYPE_BET_TYPES[lt.code] ?? []
-              setSelectedBetType(types[0] ?? BetType.TWO_BOTTOM)
-              clearItems()
-              setIsReverse(false)
-            }}
-            className={cn(
-              'rounded-full px-4 py-2 text-sm font-medium transition-colors',
-              selectedTypeId === lt.id
-                ? 'bg-[#0284c7] text-white shadow-sm'
-                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
-            )}
-          >
-            {lt.name}
-          </button>
-        ))}
-      </div>
+      {lotteryTypes && lotteryTypes.length > 0 && (
+        <LotteryTypeSelector
+          lotteryTypes={lotteryTypes}
+          selectedTypeId={selectedTypeId}
+          onSelect={(id) => {
+            const lt = lotteryTypes.find((t) => t.id === id)
+            setSelectedTypeId(id)
+            const types = LOTTERY_TYPE_BET_TYPES[lt?.code ?? ''] ?? []
+            setSelectedBetType(types[0] ?? BetType.TWO_BOTTOM)
+            clearItems()
+            setIsReverse(false)
+          }}
+        />
+      )}
 
       {!selectedTypeId && (
-        <div className="rounded-xl border border-dashed border-sky-200 bg-sky-50/40 py-16 text-center text-slate-500">
+        <div className="rounded-xl border border-dashed border-border bg-primary/5 py-16 text-center text-muted-foreground">
           <p className="text-lg">เลือกประเภทหวยเพื่อเริ่มคีย์</p>
         </div>
       )}
 
       {selectedTypeId && (
         <>
-          {/* แถบงวด + countdown */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-sky-200 bg-white px-4 py-3 shadow-sm">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">งวด</p>
-              <p className="text-sm font-semibold text-slate-800">
-                {currentRound ? formatThaiDate(currentRound.draw_date) : 'ไม่มีงวดที่เปิดรับ'}
-              </p>
-              {selectedType && (
-                <p className="text-xs text-slate-500">{selectedType.name}</p>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-slate-500">ปิดรับใน</p>
-              <div className="text-lg font-semibold tabular-nums text-[#0284c7]">
-                <Countdown closeAt={currentRound?.close_at} />
-              </div>
-            </div>
-          </div>
-
           {/* หัวบิล — สไตล์ POS */}
-          <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
               <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-600">เลขที่บิล</span>
+                <span className="text-xs font-medium text-muted-foreground">เลขที่บิล</span>
                 <input
                   readOnly
                   value={draftBillNo}
-                  className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-mono text-slate-800"
+                  className="rounded-md border border-border bg-primary/10 px-3 py-2 text-sm font-mono text-foreground"
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-600">วันที่ (งวด)</span>
+                <span className="text-xs font-medium text-muted-foreground">วันที่ (งวด)</span>
                 <div className="relative">
-                  <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0284c7]" />
+                  <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#ff9824]" />
                   <input
                     readOnly
                     value={drawDateLabel}
-                    className="w-full rounded-md border border-sky-200 bg-white py-2 pl-10 pr-3 text-sm"
+                    className="w-full rounded-md border border-border bg-card py-2 pl-10 pr-3 text-sm"
                   />
                 </div>
               </label>
@@ -458,41 +429,41 @@ export default function BetPage() {
                 />
               </div>
               <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-600">ชื่อลูกค้า</span>
+                <span className="text-xs font-medium text-muted-foreground">ชื่อลูกค้า</span>
                 <input
                   value={buyerName}
                   onChange={(e) => setBuyerName(e.target.value)}
                   placeholder="ลูกค้าทั่วไป"
                   disabled={isClosed}
-                  className="rounded-md border border-sky-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 disabled:bg-slate-50"
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff9824]/40 disabled:bg-muted"
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-600">เบอร์โทร</span>
+                <span className="text-xs font-medium text-muted-foreground">เบอร์โทร</span>
                 <input
                   value={buyerPhone}
                   onChange={(e) => setBuyerPhone(e.target.value.replace(/\D/g, ''))}
                   placeholder="—"
                   inputMode="numeric"
                   disabled={isClosed}
-                  className="rounded-md border border-sky-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 disabled:bg-slate-50"
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff9824]/40 disabled:bg-muted"
                 />
               </label>
               <label className="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
-                <span className="text-xs font-medium text-slate-600">หมายเหตุ</span>
+                <span className="text-xs font-medium text-muted-foreground">หมายเหตุ</span>
                 <input
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="ระบุหมายเหตุ (ถ้ามี)"
                   disabled={isClosed}
-                  className="rounded-md border border-sky-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 disabled:bg-slate-50"
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff9824]/40 disabled:bg-muted"
                 />
               </label>
             </div>
           </div>
 
           {/* ตารางรายการ — รายการเกิน 10 แถวยังแสดงครบ; เลื่อนในกรอบเมื่อสูงเกิน TABLE_BODY_MAX_H */}
-          <div className="overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
             <div
               className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm font-semibold text-white"
               style={{ backgroundColor: POS_BLUE }}
@@ -506,7 +477,7 @@ export default function BetPage() {
               )}
             </div>
             <div
-              className="overflow-x-auto overflow-y-auto border-t border-sky-300/30"
+              className="overflow-x-auto overflow-y-auto border-t border-primary/20"
               style={{ maxHeight: TABLE_BODY_MAX_H }}
             >
               <table className="w-full min-w-[640px] border-collapse text-sm">
@@ -524,34 +495,34 @@ export default function BetPage() {
                     <tr
                       key={item?.id ?? `empty-${index}`}
                       className={cn(
-                        'border-b border-slate-200',
-                        item ? 'bg-white' : 'bg-slate-50/80',
+                        'border-b border-border',
+                        item ? 'bg-card' : 'bg-muted/80',
                       )}
                     >
-                      <td className="border border-slate-200 px-3 py-2 text-center text-slate-600">
+                      <td className="border border-border px-3 py-2 text-center text-muted-foreground">
                         {index + 1}
                       </td>
-                      <td className="border border-slate-200 px-3 py-2 font-mono font-semibold text-slate-900">
+                      <td className="border border-border px-3 py-2 font-mono font-semibold text-foreground">
                         {item ? item.number : ''}
                       </td>
-                      <td className="border border-slate-200 px-3 py-2">
+                      <td className="border border-border px-3 py-2">
                         {item ? (
                           <Badge variant="secondary" className="text-xs font-normal">
                             {BET_TYPE_LABEL[item.bet_type]}
                           </Badge>
                         ) : (
-                          <span className="text-slate-300">—</span>
+                          <span className="text-muted-foreground/50">—</span>
                         )}
                       </td>
-                      <td className="border border-slate-200 px-3 py-2 text-right font-medium tabular-nums">
+                      <td className="border border-border px-3 py-2 text-right font-medium tabular-nums">
                         {item ? formatCurrency(item.amount) : ''}
                       </td>
-                      <td className="border border-slate-200 px-2 py-1 text-center">
+                      <td className="border border-border px-2 py-1 text-center">
                         {item ? (
                           <button
                             type="button"
                             onClick={() => removeItem(item.id)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#0284c7] transition-colors hover:bg-sky-50 hover:text-red-600"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#ff9824] transition-colors hover:bg-primary/10 hover:text-red-600"
                             aria-label="ลบรายการ"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -569,15 +540,15 @@ export default function BetPage() {
 
           {/* เพิ่มรายการ + สรุปยอด */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-            <section className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm lg:col-span-7">
-              <h3 className="mb-3 border-b border-sky-100 pb-2 text-sm font-semibold text-slate-800">
+            <section className="rounded-lg border border-border bg-card p-4 shadow-sm lg:col-span-7">
+              <h3 className="mb-3 border-b border-border pb-2 text-sm font-semibold text-foreground">
                 เพิ่มรายการแทง
               </h3>
 
-              <p className="mb-2 text-xs font-medium text-slate-600">ประเภทการแทง</p>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">ประเภทการแทง</p>
               {/* แท็บหมวดหลัก + กริดประเภทย่อย + อัตราช่องขวา — โทน POS ฟ้า–ขาวเดียวกับหน้า */}
               {betTypeGroups.length > 0 && (
-                <div className="mb-3 rounded-xl border border-sky-200 bg-white p-3 shadow-sm">
+                <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
                   <div className="flex gap-2">
                     {betTypeGroups.map((group) => {
                       const tabOn = resolvedTabGroupId === group.groupId
@@ -597,8 +568,8 @@ export default function BetPage() {
                           className={cn(
                             'flex-1 rounded-lg border py-2.5 text-center text-sm font-semibold transition-colors',
                             tabOn
-                              ? 'border-[#0284c7] bg-[#0284c7] text-white shadow-sm'
-                              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+                              ? 'border-[#ff9824] bg-primary text-primary-foreground font-bold border border-primary'
+                              : 'border border-[#444444] bg-secondary text-foreground font-semibold hover:border-primary/60 hover:bg-[#333333] active:scale-[0.98]',
                           )}
                         >
                           {group.title}
@@ -630,14 +601,14 @@ export default function BetPage() {
                             className={cn(
                               'flex min-h-[52px] w-full overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors disabled:opacity-50',
                               isSel
-                                ? 'border-[#0284c7] bg-[#0284c7] text-white shadow-sm'
-                                : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50',
+                                ? 'border-[#ff9824] bg-primary text-primary-foreground font-bold border border-primary'
+                                : 'border border-[#444444] bg-secondary text-foreground font-semibold hover:border-primary/60 hover:bg-[#333333] active:scale-[0.98]',
                             )}
                           >
                             <span
                               className={cn(
                                 'flex flex-1 items-center px-3 py-2 leading-tight',
-                                isSel ? 'text-white' : 'text-slate-800',
+                                isSel ? 'text-white' : 'text-foreground',
                               )}
                             >
                               {BET_TYPE_LABEL[bt]}
@@ -646,8 +617,8 @@ export default function BetPage() {
                               className={cn(
                                 'flex w-[4.25rem] shrink-0 items-center justify-center border-l px-2 py-2 font-mono text-sm tabular-nums',
                                 isSel
-                                  ? 'border-white/25 bg-[#0369a1] text-white'
-                                  : 'border-sky-200 bg-sky-50 text-slate-800',
+                                  ? 'border-white/25 bg-[#ea580c] text-white'
+                                  : 'border-border bg-primary/10 text-foreground',
                               )}
                             >
                               {rateText}
@@ -665,7 +636,7 @@ export default function BetPage() {
                             'flex min-h-[52px] w-full overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors disabled:opacity-50',
                             isReverse
                               ? 'border-amber-500 bg-amber-500 text-white shadow-sm'
-                              : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50',
+                              : 'border border-[#444444] bg-secondary text-foreground font-semibold hover:border-primary/60 hover:bg-[#333333] active:scale-[0.98]',
                           )}
                         >
                           <span className="flex flex-1 items-center px-3 py-2 leading-tight">
@@ -676,7 +647,7 @@ export default function BetPage() {
                               'flex w-[4.25rem] shrink-0 items-center justify-center border-l px-2 py-2 font-mono text-sm tabular-nums',
                               isReverse
                                 ? 'border-white/25 bg-amber-600 text-white'
-                                : 'border-sky-200 bg-sky-50 text-slate-800',
+                                : 'border-border bg-primary/10 text-foreground',
                             )}
                           >
                             {isReverse ? '✓' : ''}
@@ -691,7 +662,7 @@ export default function BetPage() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-600">เลข ({maxLength} หลัก)</span>
+                    <span className="text-xs font-medium text-muted-foreground">เลข ({maxLength} หลัก)</span>
                   </div>
                   <input
                     value={number}
@@ -703,18 +674,18 @@ export default function BetPage() {
                     maxLength={maxLength}
                     placeholder={'0'.repeat(maxLength)}
                     disabled={isClosed}
-                    className="h-11 rounded-md border border-sky-200 px-3 text-center font-mono text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 disabled:bg-slate-50"
+                    className="h-11 rounded-md border border-border px-3 text-center font-mono text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-[#ff9824]/40 disabled:bg-muted"
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-slate-600">ยอด (บาท)</span>
+                  <span className="text-xs font-medium text-muted-foreground">ยอด (บาท)</span>
                   <input
                     value={amount}
                     onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
                     inputMode="numeric"
                     placeholder="0"
                     disabled={isClosed}
-                    className="h-11 rounded-md border border-sky-200 px-3 text-center font-mono text-lg focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 disabled:bg-slate-50"
+                    className="h-11 rounded-md border border-border px-3 text-center font-mono text-lg focus:outline-none focus:ring-2 focus:ring-[#ff9824]/40 disabled:bg-muted"
                   />
                 </label>
               </div>
@@ -723,7 +694,7 @@ export default function BetPage() {
                 type="button"
                 onClick={handleAddItem}
                 disabled={isClosed || number.length !== maxLength || !amount}
-                className="mt-4 h-11 w-full gap-2 bg-[#0284c7] text-base font-semibold hover:bg-[#0369a1]"
+                className="mt-4 h-11 w-full gap-2 bg-[#ff9824] text-base font-semibold hover:bg-[#ea580c]"
                 size="lg"
               >
                 <Plus className="h-5 w-5" />
@@ -731,18 +702,18 @@ export default function BetPage() {
               </Button>
             </section>
 
-            <section className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm lg:col-span-5">
-              <h3 className="mb-3 border-b border-sky-100 pb-2 text-sm font-semibold text-slate-800">
+            <section className="rounded-lg border border-border bg-card p-4 shadow-sm lg:col-span-5">
+              <h3 className="mb-3 border-b border-border pb-2 text-sm font-semibold text-foreground">
                 สรุปยอดเงิน
               </h3>
               <dl className="space-y-2 text-sm">
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between text-muted-foreground">
                   <dt>รวมยอดแทง</dt>
-                  <dd className="font-semibold tabular-nums text-slate-900">
+                  <dd className="font-semibold tabular-nums text-foreground">
                     {formatCurrency(totalAmount)}
                   </dd>
                 </div>
-                <div className="flex justify-between text-slate-500">
+                <div className="flex justify-between text-muted-foreground">
                   <dt>จำนวนรายการ</dt>
                   <dd className="tabular-nums">{draftItems.length} รายการ</dd>
                 </div>
@@ -758,38 +729,38 @@ export default function BetPage() {
           </div>
 
           {/* ปุ่มลัดด้านล่าง */}
-          <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 bg-gradient-to-b from-slate-100 to-slate-200/90 p-3 shadow-inner">
+          <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-gradient-to-b from-muted to-accent p-3 shadow-inner">
             <Button
               type="button"
-              variant="secondary"
-              className="h-12 flex-1 min-w-[140px] gap-2 border border-slate-300 bg-white shadow-sm hover:bg-slate-50"
+              variant="action"
+              className="flex-1 min-w-[140px] gap-2"
               onClick={() => void handleSubmit()}
               disabled={createBet.isPending || draftItems.length === 0 || isClosed}
             >
-              <Save className="h-4 w-4 text-[#0284c7]" />
+              <Save className="h-4 w-4 text-[#ff9824]" />
               <span className="font-medium">
                 {createBet.isPending ? 'กำลังบันทึก...' : 'บันทึกบิล'}
               </span>
-              <kbd className="ml-1 hidden rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] sm:inline">
+              <kbd className="ml-1 hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] sm:inline">
                 F2
               </kbd>
             </Button>
             <Button
               type="button"
-              variant="secondary"
-              className="h-12 flex-1 min-w-[140px] gap-2 border border-slate-300 bg-white shadow-sm hover:bg-slate-50"
+              variant="action"
+              className="flex-1 min-w-[140px] gap-2"
               onClick={handleClearForm}
             >
-              <RotateCcw className="h-4 w-4 text-slate-600" />
+              <RotateCcw className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">ล้างข้อมูล</span>
-              <kbd className="ml-1 hidden rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] sm:inline">
+              <kbd className="ml-1 hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] sm:inline">
                 F3
               </kbd>
             </Button>
             <Button
               type="button"
-              variant="secondary"
-              className="h-12 flex-1 min-w-[140px] gap-2 border border-slate-300 bg-white shadow-sm hover:bg-slate-50"
+              variant="action"
+              className="flex-1 min-w-[140px] gap-2"
               onClick={() => {
                 if (receiptDialog.show) {
                   window.print()
@@ -800,23 +771,23 @@ export default function BetPage() {
               disabled={draftItems.length === 0 || isClosed}
               title={draftItems.length === 0 ? 'กรุณาเพิ่มรายการ' : isClosed ? 'งวดนี้ปิดรับแล้ว' : receiptDialog.show ? 'พิมพ์ใบเสร็จ (F4)' : 'บันทึกและพิมพ์ใบเสร็จ (F4)'}
             >
-              <Printer className="h-4 w-4 text-[#0284c7]" />
+              <Printer className="h-4 w-4 text-[#ff9824]" />
               <span className="font-medium">พิมพ์ใบเสร็จ</span>
-              <kbd className="ml-1 hidden rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] sm:inline">
+              <kbd className="ml-1 hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] sm:inline">
                 F4
               </kbd>
             </Button>
             <Button
               type="button"
-              variant="secondary"
-              className="h-12 flex-1 min-w-[140px] gap-2 border border-slate-300 bg-white shadow-sm hover:bg-slate-50"
+              variant="action"
+              className="flex-1 min-w-[140px] gap-2"
               onClick={handleExportDraft}
               disabled={draftItems.length === 0}
               title={draftItems.length === 0 ? 'กรุณาเพิ่มรายการ' : 'ส่งออกเป็น Excel (F5)'}
             >
               <FileSpreadsheet className="h-4 w-4 text-green-600" />
               <span className="font-medium">ส่งออก Excel</span>
-              <kbd className="ml-1 hidden rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] sm:inline">
+              <kbd className="ml-1 hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] sm:inline">
                 F5
               </kbd>
             </Button>
@@ -832,7 +803,7 @@ export default function BetPage() {
               <AlertTriangle className="h-7 w-7 text-red-500" />
             </div>
             <DialogTitle className="text-center text-lg mb-1.5">{alertDialog.title}</DialogTitle>
-            <DialogDescription className="text-center text-base text-slate-600">
+            <DialogDescription className="text-center text-base text-muted-foreground">
               {alertDialog.message}
             </DialogDescription>
           </div>
@@ -856,7 +827,7 @@ export default function BetPage() {
       >
         <DialogContent
           overlayClassName="max-sm:hidden"
-          className="w-full max-w-none min-w-0 gap-0 border-0 !bg-transparent p-0 !shadow-none rounded-none max-sm:!top-0 max-sm:!left-0 max-sm:!right-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:!max-w-none max-sm:!translate-x-0 max-sm:!translate-y-0 max-sm:!rounded-none max-sm:!max-h-none max-sm:overflow-hidden max-sm:overscroll-contain max-sm:bg-[#E3F2FD] max-sm:flex max-sm:flex-col sm:left-1/2 sm:top-1/2 sm:w-fit sm:max-w-[min(100vw,360px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-none [&>button]:hidden"
+          className="w-full max-w-none min-w-0 gap-0 border-0 !bg-transparent p-0 !shadow-none rounded-none max-sm:!top-0 max-sm:!left-0 max-sm:!right-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:!max-w-none max-sm:!translate-x-0 max-sm:!translate-y-0 max-sm:!rounded-none max-sm:!max-h-none max-sm:overflow-hidden max-sm:overscroll-contain max-sm:bg-background max-sm:flex max-sm:flex-col sm:left-1/2 sm:top-1/2 sm:w-fit sm:max-w-[min(100vw,360px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-none [&>button]:hidden"
         >
           <DialogTitle className="sr-only">ใบเสร็จ</DialogTitle>
           <DialogDescription className="sr-only">รายละเอียดใบเสร็จรับเงิน</DialogDescription>

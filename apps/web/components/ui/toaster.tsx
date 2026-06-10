@@ -37,7 +37,7 @@ export function Toaster() {
                   'h-5 w-5 shrink-0 mt-0.5',
                   t.variant === 'success' && 'text-green-500',
                   t.variant === 'destructive' && 'text-red-500',
-                  t.variant === 'default' && 'text-sky-500',
+                  t.variant === 'default' && 'text-primary',
                 )}
               />
               <div className="min-w-0">

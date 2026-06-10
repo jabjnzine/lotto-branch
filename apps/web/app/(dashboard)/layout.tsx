@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { AppLogo } from '@/components/shared/AppLogo'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
@@ -13,8 +14,8 @@ import api from '@/lib/api'
 
 function Spinner() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-sky-50">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
     </div>
   )
 }
@@ -63,15 +64,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (isChecking || !user) return <Spinner />
 
   return (
-    <div className="flex min-h-screen bg-sky-50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar />
       <main className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <header className="sticky top-0 z-30 flex items-center justify-between h-14 px-4 md:px-6 bg-white border-b-2 border-sky-100 shadow-sm">
-          <span className="text-sm font-semibold text-sky-600 lg:hidden">ระบบหวย</span>
+        <header className="sticky top-0 z-30 flex items-center justify-between h-14 px-4 md:px-6 bg-card border-b border-border shadow-sm shadow-black/20">
+          <div className="lg:hidden">
+            <AppLogo size="sm" showText={false} />
+          </div>
           <span className="hidden lg:block" />
-          <div className="flex items-center gap-2 text-slate-600">
-            <CalendarDays className="h-4 w-4 text-sky-500" />
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <CalendarDays className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium">
               {formatThaiDate(dayjs().format('YYYY-MM-DD'))}
             </span>

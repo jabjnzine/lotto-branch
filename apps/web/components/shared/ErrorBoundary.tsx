@@ -36,8 +36,8 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
               <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">เกิดข้อผิดพลาด</h2>
-            <p className="text-sm text-slate-500 mb-6">
+            <h2 className="text-lg font-semibold text-foreground mb-2">เกิดข้อผิดพลาด</h2>
+            <p className="text-sm text-muted-foreground mb-6">
               {this.state.error?.message ?? 'พบข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง'}
             </p>
             <Button

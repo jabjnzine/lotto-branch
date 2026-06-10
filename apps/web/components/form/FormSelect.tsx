@@ -20,12 +20,12 @@ export function FormSelect({ name, label, options, placeholder, disabled, classN
   const error = errors[name]
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
-      <label className="text-sm font-medium text-slate-700">{label}</label>
+    <div className={cn('flex flex-col gap-2', className)}>
+      <label className="text-sm font-medium text-foreground/90">{label}</label>
       <select
         {...register(name)}
         disabled={disabled}
-        className="flex h-10 w-full rounded-md border border-sky-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-12 w-full rounded-full border border-[#444444] bg-secondary px-5 py-2 text-base text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((opt) => (
@@ -35,7 +35,7 @@ export function FormSelect({ name, label, options, placeholder, disabled, classN
         ))}
       </select>
       {error && (
-        <span className="text-xs text-red-500">{error.message as string}</span>
+        <span className="text-xs text-destructive font-medium">{error.message as string}</span>
       )}
     </div>
   )

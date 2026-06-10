@@ -12,8 +12,8 @@ import {
   Home,
   Settings,
   LogOut,
-  Clover,
 } from 'lucide-react'
+import { AppLogo } from '@/components/shared/AppLogo'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
 import api from '@/lib/api'
@@ -40,21 +40,11 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="hidden lg:flex lg:flex-col lg:w-60 lg:min-h-screen bg-white border-r border-sky-100">
-      {/* Logo */}
-      <div className="p-5 border-b border-sky-100">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 ring-1 ring-sky-100">
-            <Clover className="h-5 w-5 text-sky-600" strokeWidth={1.5} />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">ระบบหวย</h2>
-            <p className="text-xs text-sky-500 font-medium">Back Office</p>
-          </div>
-        </div>
+    <aside className="hidden lg:flex lg:flex-col lg:w-60 lg:min-h-screen bg-card border-r border-border">
+      <div className="p-5 border-b border-border">
+        <AppLogo size="md" />
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
@@ -63,10 +53,10 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                 active
-                  ? 'bg-sky-50 text-sky-700'
-                  : 'text-slate-600 hover:bg-sky-50 hover:text-slate-900',
+                  ? 'bg-primary text-primary-foreground font-bold'
+                  : 'text-muted-foreground font-medium hover:bg-secondary hover:text-foreground',
               )}
             >
               <Icon className="h-4 w-4 flex-shrink-0" />
@@ -76,20 +66,19 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* User */}
-      <div className="p-4 border-t border-sky-100">
+      <div className="p-4 border-t border-border">
         <div className="flex items-center gap-3 px-3 py-2 mb-2">
-          <div className="h-8 w-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-700 text-sm font-bold">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
             {user?.name?.[0] ?? 'A'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-900 truncate">{user?.name}</p>
-            <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
+            <p className="text-sm font-medium text-foreground truncate">{user?.name}</p>
+            <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
         >
           <LogOut className="h-4 w-4" />
           ออกจากระบบ

@@ -212,6 +212,7 @@ export default function HousesPage() {
       <AgentRateSection />
 
       <Card>
+<<<<<<< Updated upstream
         <CardHeader>
           <CardTitle className="text-base">รายการบ้าน</CardTitle>
         </CardHeader>
@@ -231,6 +232,11 @@ export default function HousesPage() {
               </div>
             )
           )}
+=======
+        <CardContent className="py-16 text-center">
+          <Home className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+          <p className="text-muted-foreground">ระบบบ้านจะเปิดใช้งานในอนาคต</p>
+>>>>>>> Stashed changes
         </CardContent>
       </Card>
     </div>
