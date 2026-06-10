@@ -49,10 +49,10 @@ function AgentRateSection() {
                 max="100"
                 defaultValue={currentRate}
                 onChange={(e) => setValue(e.target.value)}
-                className="w-28 h-9 border border-sky-200 rounded-md px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-28 h-9 border border-border rounded-md px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
                 autoFocus
               />
-              <span className="text-sm text-slate-500">%</span>
+              <span className="text-sm text-muted-foreground">%</span>
               <Button size="sm" onClick={handleSave} disabled={update.isPending}>
                 <Check className="h-4 w-4" />
               </Button>
@@ -62,7 +62,7 @@ function AgentRateSection() {
             </>
           ) : (
             <>
-              <span className="text-2xl font-bold text-sky-600">{currentRate}%</span>
+              <span className="text-2xl font-bold text-primary">{currentRate}%</span>
               <Button size="sm" variant="outline" onClick={() => { setValue(String(currentRate)); setEditing(true) }}>
                 <Pencil className="h-4 w-4 mr-1" />
                 แก้ไข
@@ -70,7 +70,7 @@ function AgentRateSection() {
             </>
           )}
         </div>
-        <p className="text-xs text-slate-400 mt-2">% เจ้าคือ cap สูงสุดที่บ้านแต่ละหลังจะได้รับได้</p>
+        <p className="text-xs text-muted-foreground mt-2">% เจ้าคือ cap สูงสุดที่บ้านแต่ละหลังจะได้รับได้</p>
       </CardContent>
     </Card>
   )
@@ -94,13 +94,13 @@ function HouseRow({ house, agentRate }: { house: House; agentRate: number }) {
   const commissionRate = parseFloat(house.commission_rate)
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-sky-50 rounded-lg">
+    <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg">
       {editing ? (
         <>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="flex-1 h-9 border border-sky-200 rounded-md px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="flex-1 h-9 border border-border rounded-md px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
           />
           <div className="flex items-center gap-1.5">
             <input
@@ -110,9 +110,9 @@ function HouseRow({ house, agentRate }: { house: House; agentRate: number }) {
               max={agentRate}
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-20 h-9 border border-sky-200 rounded-md px-2 text-sm font-mono text-right focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-20 h-9 border border-border rounded-md px-2 text-sm font-mono text-right focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
             />
-            <span className="text-sm text-slate-500">%</span>
+            <span className="text-sm text-muted-foreground">%</span>
           </div>
           <Button size="sm" onClick={handleSave} disabled={update.isPending}>
             <Check className="h-4 w-4" />
@@ -123,9 +123,9 @@ function HouseRow({ house, agentRate }: { house: House; agentRate: number }) {
         </>
       ) : (
         <>
-          <Home className="h-4 w-4 text-sky-500 shrink-0" />
-          <span className="flex-1 text-sm font-medium text-slate-700">{house.name}</span>
-          <span className="text-sm font-mono text-sky-600 font-semibold">{commissionRate}%</span>
+          <Home className="h-4 w-4 text-primary shrink-0" />
+          <span className="flex-1 text-sm font-medium text-foreground">{house.name}</span>
+          <span className="text-sm font-mono text-primary font-semibold">{commissionRate}%</span>
           <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
             <Pencil className="h-4 w-4" />
           </Button>
@@ -160,12 +160,12 @@ function AddHouseForm({ agentRate, onDone }: { agentRate: number; onDone: () => 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-3 p-3 border-2 border-dashed border-sky-300 rounded-lg bg-white">
+    <form onSubmit={handleSubmit} className="flex items-center gap-3 p-3 border-2 border-dashed border-border rounded-lg bg-card">
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="ชื่อบ้าน"
-        className="flex-1 h-9 border border-sky-200 rounded-md px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+        className="flex-1 h-9 border border-border rounded-md px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground"
         autoFocus
       />
       <div className="flex items-center gap-1.5">
@@ -176,9 +176,9 @@ function AddHouseForm({ agentRate, onDone }: { agentRate: number; onDone: () => 
           max={agentRate}
           value={rate}
           onChange={(e) => setRate(e.target.value)}
-          className="w-20 h-9 border border-sky-200 rounded-md px-2 text-sm font-mono text-right focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-20 h-9 border border-border rounded-md px-2 text-sm font-mono text-right focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
         />
-        <span className="text-sm text-slate-500">%</span>
+        <span className="text-sm text-muted-foreground">%</span>
       </div>
       <Button type="submit" size="sm" disabled={create.isPending}>
         <Check className="h-4 w-4 mr-1" />

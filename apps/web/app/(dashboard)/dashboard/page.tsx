@@ -11,7 +11,7 @@ import { Countdown } from '@/components/shared/Countdown'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { StatCardGridSkeleton } from '@/components/shared/StatCardSkeleton'
 import { formatCurrency, formatThaiDate } from '@/lib/utils'
-import { Trophy, Ban, TrendingUp, PenLine, FileText, DollarSign, TrendingDown } from 'lucide-react'
+import { Trophy, Ban, TrendingUp, PenLine, FileText, DollarSign, TrendingDown, Users } from 'lucide-react'
 import Link from 'next/link'
 
 const statusLabel: Record<string, { label: string; variant: 'success' | 'destructive' | 'default' | 'warning' }> = {
@@ -119,6 +119,33 @@ export default function DashboardPage() {
                   {todayIncome ? `${todayIncome.isProfitable ? '+' : ''}${formatCurrency(todayIncome.profit)}` : formatCurrency(0)} <span className="text-sm font-normal text-muted-foreground">บาท</span>
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Commission Summary */}
+      {todayIncome && (
+        parseFloat(todayIncome.totalHouseCommission ?? '0') > 0 ||
+        parseFloat(todayIncome.totalAgentCommission ?? '0') > 0
+      ) && (
+        <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+          <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-primary" />
+            ค่าคอมมิชชั่นวันนี้
+          </p>
+          <div className="grid grid-cols-3 gap-4 text-sm tabular-nums">
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">คอมบ้าน</p>
+              <p className="font-semibold text-primary">{formatCurrency(todayIncome.totalHouseCommission ?? '0')} <span className="text-xs font-normal text-muted-foreground">บาท</span></p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">คอมเจ้า</p>
+              <p className="font-semibold text-primary">{formatCurrency(todayIncome.totalAgentCommission ?? '0')} <span className="text-xs font-normal text-muted-foreground">บาท</span></p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">ยอดสุทธิ</p>
+              <p className="font-semibold text-foreground">{formatCurrency(todayIncome.netAmount ?? todayIncome.totalReceived)} <span className="text-xs font-normal text-muted-foreground">บาท</span></p>
             </div>
           </div>
         </div>
