@@ -212,7 +212,6 @@ export default function HousesPage() {
       <AgentRateSection />
 
       <Card>
-<<<<<<< Updated upstream
         <CardHeader>
           <CardTitle className="text-base">รายการบ้าน</CardTitle>
         </CardHeader>
@@ -227,16 +226,11 @@ export default function HousesPage() {
           ) : (
             !adding && (
               <div className="py-12 text-center">
-                <Home className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">ยังไม่มีบ้าน กด "เพิ่มบ้าน" เพื่อเริ่มต้น</p>
+                <Home className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
+                <p className="text-muted-foreground text-sm">ยังไม่มีบ้าน กด "เพิ่มบ้าน" เพื่อเริ่มต้น</p>
               </div>
             )
           )}
-=======
-        <CardContent className="py-16 text-center">
-          <Home className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-          <p className="text-muted-foreground">ระบบบ้านจะเปิดใช้งานในอนาคต</p>
->>>>>>> Stashed changes
         </CardContent>
       </Card>
     </div>

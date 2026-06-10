@@ -194,13 +194,8 @@ export default function IncomePage() {
                       <BarChart3 className="h-4 w-4" />
                       แยกตามประเภทหวย
                     </div>
-<<<<<<< Updated upstream
-                    <div className="divide-y divide-slate-100 overflow-x-auto">
-                      {summary.byLotteryType.map((lt) => {
-=======
                     <div className="divide-y divide-border overflow-x-auto">
-                      {summary.byLotteryType.map((lt: { code: string; name: string; received: string; payout: string; profit: string }) => {
->>>>>>> Stashed changes
+                      {summary.byLotteryType.map((lt) => {
                         const ltProfit = parseFloat(lt.profit)
                         return (
                           <div key={lt.code} className="flex items-center justify-between px-4 py-3 min-w-[320px]">
