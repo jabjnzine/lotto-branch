@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { ScheduleModule } from '@nestjs/schedule'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from './auth/auth.module'
+import { UsersModule } from './users/users.module'
+import { HousesModule } from './houses/houses.module'
 import { LotteryTypesModule } from './lottery-types/lottery-types.module'
 import { RoundsModule } from './rounds/rounds.module'
 import { BetsModule } from './bets/bets.module'
@@ -13,6 +15,7 @@ import { IncomeModule } from './income/income.module'
 // Entities
 import { User } from './entities/user.entity'
 import { House } from './entities/house.entity'
+import { SystemConfig } from './entities/system-config.entity'
 import { LotteryType } from './entities/lottery-type.entity'
 import { PrizeRate } from './entities/prize-rate.entity'
 import { LotteryRound } from './entities/lottery-round.entity'
@@ -29,7 +32,7 @@ import { AuditLog } from './entities/audit-log.entity'
       url: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
       entities: [
-        User, House, LotteryType, PrizeRate,
+        User, House, SystemConfig, LotteryType, PrizeRate,
         LotteryRound, LotteryResult, Restriction,
         Bet, BetItem, AuditLog,
       ],
@@ -43,6 +46,8 @@ import { AuditLog } from './entities/audit-log.entity'
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     AuthModule,
+    UsersModule,
+    HousesModule,
     LotteryTypesModule,
     RoundsModule,
     BetsModule,

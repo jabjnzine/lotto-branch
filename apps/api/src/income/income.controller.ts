@@ -16,4 +16,9 @@ export class IncomeController {
   getSummary(@Query('roundId') roundId: string) {
     return this.service.getSummaryByRound(roundId)
   }
+
+  @Get('summary/per-house')
+  getSummaryPerHouse(@Query('roundId') roundId: string) {
+    return this.service.getSummaryByRoundPerHouse(roundId)
+  }
 }

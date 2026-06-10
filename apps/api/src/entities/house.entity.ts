@@ -24,6 +24,9 @@ export class House {
   @JoinColumn({ name: 'owner_id' })
   owner: User
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  commission_rate: string
+
   @CreateDateColumn()
   created_at: Date
 

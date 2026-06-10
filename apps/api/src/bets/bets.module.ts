@@ -6,11 +6,13 @@ import { Restriction } from '../entities/restriction.entity'
 import { PrizeRate } from '../entities/prize-rate.entity'
 import { LotteryRound } from '../entities/lottery-round.entity'
 import { LotteryType } from '../entities/lottery-type.entity'
+import { House } from '../entities/house.entity'
+import { SystemConfig } from '../entities/system-config.entity'
 import { BetsService } from './bets.service'
 import { BetsController } from './bets.controller'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Bet, BetItem, Restriction, PrizeRate, LotteryRound, LotteryType])],
+  imports: [TypeOrmModule.forFeature([Bet, BetItem, Restriction, PrizeRate, LotteryRound, LotteryType, House, SystemConfig])],
   providers: [BetsService],
   controllers: [BetsController],
   exports: [BetsService],

@@ -35,6 +35,12 @@ export class BetItem {
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   win_amount: string | null
 
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  commission_amount: string
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  agent_commission_amount: string
+
   @DeleteDateColumn()
   deleted_at: Date | null
 

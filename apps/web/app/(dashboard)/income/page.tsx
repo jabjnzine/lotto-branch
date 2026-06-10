@@ -3,13 +3,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useLotteryTypes } from '@/lib/hooks/useLotteryTypes'
 import { useRounds } from '@/lib/hooks/useRounds'
-import { useIncomeSummary } from '@/lib/hooks/useIncome'
+import { useIncomeSummary, useIncomePerHouse } from '@/lib/hooks/useIncome'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { cn, formatCurrency, formatThaiDate } from '@/lib/utils'
 import { BET_TYPE_LABEL, BetType } from '@lotto/shared'
-import { TrendingUp, TrendingDown, DollarSign, Target, BarChart3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, Target, BarChart3, Home, Users } from 'lucide-react'
 
 const POS_BLUE = '#0284c7'
 
@@ -27,6 +27,7 @@ export default function IncomePage() {
   const { data: lotteryTypes, isLoading } = useLotteryTypes()
   const { data: rounds } = useRounds(selectedTypeId ?? undefined, 'resulted')
   const { data: summary, isLoading: summaryLoading } = useIncomeSummary(selectedRoundId)
+  const { data: perHouse } = useIncomePerHouse(selectedRoundId)
 
   useEffect(() => {
     if (!selectedTypeId && lotteryTypes && lotteryTypes.length > 0) {
@@ -125,6 +126,22 @@ export default function IncomePage() {
 
             {summary && !summaryLoading && (
               <>
+                {/* Commission summary */}
+                {(parseFloat(summary.totalHouseCommission ?? '0') > 0 ||
+                  parseFloat(summary.totalAgentCommission ?? '0') > 0) && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                    <p className="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1.5">
+                      <Users className="h-3.5 w-3.5" />
+                      ค่าคอมมิชชั่น
+                    </p>
+                    <div className="flex flex-wrap gap-4 text-sm tabular-nums">
+                      <span className="text-slate-600">คอมบ้าน <span className="font-semibold text-amber-700">{formatCurrency(summary.totalHouseCommission ?? '0')}</span></span>
+                      <span className="text-slate-600">คอมเจ้า <span className="font-semibold text-amber-700">{formatCurrency(summary.totalAgentCommission ?? '0')}</span></span>
+                      <span className="text-slate-600">ยอดสุทธิ <span className="font-semibold text-slate-800">{formatCurrency(summary.netAmount ?? summary.totalReceived)}</span></span>
+                    </div>
+                  </div>
+                )}
+
                 {/* KPIs */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div className="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
@@ -188,7 +205,7 @@ export default function IncomePage() {
                       แยกตามประเภทหวย
                     </div>
                     <div className="divide-y divide-slate-100 overflow-x-auto">
-                      {summary.byLotteryType.map((lt: { code: string; name: string; received: string; payout: string; profit: string }) => {
+                      {summary.byLotteryType.map((lt) => {
                         const ltProfit = parseFloat(lt.profit)
                         return (
                           <div key={lt.code} className="flex items-center justify-between px-4 py-3 min-w-[320px]">
@@ -246,6 +263,43 @@ export default function IncomePage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Per-house breakdown */}
+                {perHouse && perHouse.length > 0 && (
+                  <div className="overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
+                    <div
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white"
+                      style={{ backgroundColor: POS_BLUE }}
+                    >
+                      <Home className="h-4 w-4" />
+                      แยกตามบ้าน
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-slate-100 text-xs text-slate-400">
+                            <th className="px-4 py-2 text-left">บ้าน</th>
+                            <th className="px-4 py-2 text-right">ยอดรับ</th>
+                            <th className="px-4 py-2 text-right">คอมบ้าน</th>
+                            <th className="px-4 py-2 text-right">คอมเจ้า</th>
+                            <th className="px-4 py-2 text-right">ยอดสุทธิ</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {perHouse.map((h) => (
+                            <tr key={h.houseId ?? 'none'} className="hover:bg-slate-50">
+                              <td className="px-4 py-2.5 font-medium text-slate-700">{h.houseName}</td>
+                              <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(h.received)}</td>
+                              <td className="px-4 py-2.5 text-right tabular-nums text-amber-600">{formatCurrency(h.houseCommission)}</td>
+                              <td className="px-4 py-2.5 text-right tabular-nums text-amber-600">{formatCurrency(h.agentCommission)}</td>
+                              <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-slate-800">{formatCurrency(h.netAmount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 

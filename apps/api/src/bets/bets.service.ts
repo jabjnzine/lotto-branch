@@ -16,6 +16,8 @@ import { PrizeRate } from '../entities/prize-rate.entity'
 import { LotteryRound } from '../entities/lottery-round.entity'
 import { LotteryResult } from '../entities/lottery-result.entity'
 import { LotteryType } from '../entities/lottery-type.entity'
+import { House } from '../entities/house.entity'
+import { SystemConfig } from '../entities/system-config.entity'
 import { BetStatus, RestrictionType, RoundStatus, ResultStructure, BetType, CreateBetDto, BET_TYPE_LABEL } from '@lotto/shared'
 import { getWinningDigits, isMatch } from './prize-checker'
 
@@ -28,6 +30,8 @@ export class BetsService {
     @InjectRepository(PrizeRate) private readonly prizeRatesRepo: Repository<PrizeRate>,
     @InjectRepository(LotteryRound) private readonly roundsRepo: Repository<LotteryRound>,
     @InjectRepository(LotteryType) private readonly lotteryTypesRepo: Repository<LotteryType>,
+    @InjectRepository(House) private readonly housesRepo: Repository<House>,
+    @InjectRepository(SystemConfig) private readonly configRepo: Repository<SystemConfig>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -62,12 +66,25 @@ export class BetsService {
     return bet
   }
 
+  private async getCommissionRates(houseId?: string | null): Promise<{ houseRate: Decimal; agentRate: Decimal }> {
+    let houseRate = new Decimal(0)
+    if (houseId) {
+      const house = await this.housesRepo.findOne({ where: { id: houseId } })
+      if (house) houseRate = new Decimal(house.commission_rate)
+    }
+    const cfg = await this.configRepo.findOne({ where: { key: 'agent_commission_rate' } })
+    const agentRate = new Decimal(cfg?.value ?? 0)
+    return { houseRate, agentRate }
+  }
+
   async create(dto: CreateBetDto, userId: string) {
     const round = await this.roundsRepo.findOne({ where: { id: dto.round_id } })
     if (!round) throw new NotFoundException('ไม่พบงวด')
     if (round.status !== RoundStatus.OPEN) {
       throw new BadRequestException('งวดนี้ปิดรับแทงแล้ว')
     }
+
+    const { houseRate, agentRate } = await this.getCommissionRates(dto.house_id)
 
     return this.dataSource.transaction(async (manager) => {
       // ดึง prize rates สำหรับ lottery type นี้
@@ -128,12 +145,17 @@ export class BetsService {
           throw new BadRequestException(`ประเภทการแทง ${item.bet_type} ไม่รองรับ`)
         }
 
-        totalAmount = totalAmount.plus(item.amount)
+        const amt = new Decimal(item.amount)
+        totalAmount = totalAmount.plus(amt)
+        const commissionAmount = amt.mul(houseRate).div(100)
+        const agentCommissionAmount = amt.mul(agentRate.minus(houseRate)).div(100)
         betItems.push({
           number: item.number,
           bet_type: item.bet_type,
-          amount: String(item.amount),
+          amount: amt.toFixed(2),
           payout_rate: prizeRate.payout_rate,
+          commission_amount: commissionAmount.toFixed(2),
+          agent_commission_amount: agentCommissionAmount.toFixed(2),
         })
       }
 
@@ -141,6 +163,7 @@ export class BetsService {
         round_id: dto.round_id,
         lottery_type_id: dto.lottery_type_id,
         user_id: userId,
+        house_id: dto.house_id ?? null,
         buyer_name: dto.buyer_name ?? null,
         note: dto.note ?? null,
         total_amount: totalAmount.toFixed(2),

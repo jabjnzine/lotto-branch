@@ -6,6 +6,8 @@ import { useCurrentRound } from '@/lib/hooks/useRounds'
 import { useCreateBet } from '@/lib/hooks/useBets'
 import { useRestrictions } from '@/lib/hooks/useRestrictions'
 import { useBetStore } from '@/lib/stores/useBetStore'
+import { useHouses } from '@/lib/hooks/useHouses'
+import { HouseSelect } from '@/components/ui/select-ark'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Countdown } from '@/components/shared/Countdown'
 import { Receipt } from '@/components/shared/Receipt'
@@ -65,6 +67,7 @@ export default function BetPage() {
   const [selectedBetType, setSelectedBetType] = useState<BetType>(BetType.THREE_TOP)
   const [number, setNumber] = useState('')
   const [amount, setAmount] = useState('')
+  const [selectedHouseId, setSelectedHouseId] = useState<string | null>(null)
   const [buyerName, setBuyerName] = useState('')
   const [buyerPhone, setBuyerPhone] = useState('')
   const [note, setNote] = useState('')
@@ -101,6 +104,7 @@ export default function BetPage() {
     createdAt: '',
   })
 
+  const { data: houses } = useHouses()
   const { data: lotteryTypes, isLoading: typesLoading } = useLotteryTypes()
   const { data: prizeRates } = usePrizeRates(selectedTypeId)
   const { data: currentRound } = useCurrentRound(selectedTypeId)
@@ -163,8 +167,15 @@ export default function BetPage() {
   }, [draftItems])
 
   const handleAddItem = () => {
-    if (!number || !amount || number.length !== maxLength) return
+    if (!number || number.length !== maxLength) {
+      setAlertDialog({ show: true, title: 'กรอกเลขไม่ครบ', message: `กรุณากรอกเลข ${maxLength} หลักให้ครบ` })
+      return
+    }
     const numAmount = parseFloat(amount)
+    if (!amount || isNaN(numAmount) || numAmount <= 0) {
+      setAlertDialog({ show: true, title: 'ยอดไม่ถูกต้อง', message: 'กรุณากรอกยอดเงินที่ถูกต้อง' })
+      return
+    }
 
     // เช็คเลขอั้น
     const restriction = restrictions?.find(
@@ -213,58 +224,69 @@ export default function BetPage() {
 
     const total = draftItems.reduce((sum, item) => sum + item.amount, 0)
 
-    const savedBet = await createBet.mutateAsync({
-      round_id: currentRound.id,
-      lottery_type_id: selectedTypeId,
-      buyer_name: buyerName || undefined,
-      note: note || undefined,
-      items: draftItems.map((item) => ({
-        number: item.number,
-        bet_type: item.bet_type,
-        amount: item.amount,
-      })),
-    })
-
-    toast({
-      title: 'บันทึกบิลสำเร็จ',
-      description: `เลขที่บิล ${draftBillNo} จำนวน ${draftItems.length} รายการ`,
-      variant: 'success',
-    })
-
-    // Show receipt dialog
-    setReceiptDialog({
-      show: true,
-      billNo: savedBet.id?.slice(-8).toUpperCase() ?? draftBillNo,
-      betFullId: savedBet.id,
-      drawDate: currentRound.draw_date,
-      typeName: selectedType?.name ?? '',
-      buyerName: buyerName || 'ลูกค้าทั่วไป',
-      note: savedBet.note ?? note ?? null,
-      betStatus: savedBet.status ?? 'pending',
-      items: (savedBet.items ?? draftItems).map(
-        (item: {
-          number: string
-          bet_type: string
-          amount: string | number
-          payout_rate?: string | number | null
-        }) => ({
+    try {
+      const savedBet = await createBet.mutateAsync({
+        round_id: currentRound.id,
+        lottery_type_id: selectedTypeId,
+        house_id: selectedHouseId || null,
+        buyer_name: buyerName || undefined,
+        note: note || undefined,
+        items: draftItems.map((item) => ({
           number: item.number,
           bet_type: item.bet_type,
-          amount: String(item.amount),
-          payout_rate: item.payout_rate ?? null,
-        }),
-      ),
-      totalAmount: Number(savedBet.total_amount ?? total),
-      createdAt: savedBet.created_at ?? new Date().toISOString(),
-    })
+          amount: item.amount,
+        })),
+      })
 
-    clearItems()
-    setBuyerName('')
-    setBuyerPhone('')
-    setNote('')
-    setDraftBillNo(
-      `BT-${dayjs().format('YYMMDD')}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
-    )
+      toast({
+        title: 'บันทึกบิลสำเร็จ',
+        description: `เลขที่บิล ${draftBillNo} จำนวน ${draftItems.length} รายการ`,
+        variant: 'success',
+      })
+
+      setReceiptDialog({
+        show: true,
+        billNo: savedBet.id?.slice(-8).toUpperCase() ?? draftBillNo,
+        betFullId: savedBet.id,
+        drawDate: currentRound.draw_date,
+        typeName: selectedType?.name ?? '',
+        buyerName: buyerName || 'ลูกค้าทั่วไป',
+        note: savedBet.note ?? note ?? null,
+        betStatus: savedBet.status ?? 'pending',
+        items: (savedBet.items ?? draftItems).map(
+          (item: {
+            number: string
+            bet_type: string
+            amount: string | number
+            payout_rate?: string | number | null
+          }) => ({
+            number: item.number,
+            bet_type: item.bet_type,
+            amount: String(item.amount),
+            payout_rate: item.payout_rate ?? null,
+          }),
+        ),
+        totalAmount: Number(savedBet.total_amount ?? total),
+        createdAt: savedBet.created_at ?? new Date().toISOString(),
+      })
+
+      clearItems()
+      setBuyerName('')
+      setBuyerPhone('')
+      setNote('')
+      setDraftBillNo(
+        `BT-${dayjs().format('YYMMDD')}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      )
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        ?? 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
+      setAlertDialog({
+        show: true,
+        title: 'บันทึกบิลไม่สำเร็จ',
+        message: Array.isArray(message) ? message.join(', ') : String(message),
+      })
+    }
   }, [
     buyerName,
     clearItems,
@@ -273,6 +295,7 @@ export default function BetPage() {
     draftBillNo,
     draftItems,
     note,
+    selectedHouseId,
     selectedType?.name,
     selectedTypeId,
   ])
@@ -425,6 +448,15 @@ export default function BetPage() {
                   />
                 </div>
               </label>
+              <div>
+                <HouseSelect
+                  label="บ้าน"
+                  houses={houses}
+                  value={selectedHouseId}
+                  onChange={setSelectedHouseId}
+                  disabled={isClosed}
+                />
+              </div>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-slate-600">ชื่อลูกค้า</span>
                 <input

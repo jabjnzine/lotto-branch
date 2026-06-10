@@ -19,6 +19,7 @@ export interface CreateBetItemDto {
 export interface CreateBetDto {
   round_id: string
   lottery_type_id: string
+  house_id?: string | null
   buyer_name?: string
   note?: string
   items: CreateBetItemDto[]
@@ -47,6 +48,9 @@ export interface IncomeSummaryByType {
   name: string
   received: string
   payout: string
+  houseCommission: string
+  agentCommission: string
+  netAmount: string
   profit: string
 }
 
@@ -60,6 +64,9 @@ export interface IncomeSummaryResponse {
   roundId?: string
   totalReceived: string
   totalPayout: string
+  totalHouseCommission: string
+  totalAgentCommission: string
+  netAmount: string
   profit: string
   byLotteryType: IncomeSummaryByType[]
   byBetType: IncomeSummaryByBetType[]
