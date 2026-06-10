@@ -8,75 +8,14 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import {
   useHouses,
-  useAgentRate,
   useCreateHouse,
   useUpdateHouse,
   useDeleteHouse,
-  useUpdateAgentRate,
   type House,
 } from '@/lib/hooks/useHouses'
 import { Home, Plus, Pencil, Trash2, Check, X } from 'lucide-react'
 
-function AgentRateSection() {
-  const { data, isLoading } = useAgentRate()
-  const update = useUpdateAgentRate()
-  const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState('')
-
-  const currentRate = data?.agent_commission_rate ?? 0
-
-  const handleSave = () => {
-    const num = parseFloat(value)
-    if (isNaN(num) || num < 0 || num > 100) return
-    update.mutate(num, { onSuccess: () => setEditing(false) })
-  }
-
-  if (isLoading) return null
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">% เจ้า (Agent Commission Rate)</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center gap-3">
-          {editing ? (
-            <>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                defaultValue={currentRate}
-                onChange={(e) => setValue(e.target.value)}
-                className="w-28 h-9 border border-border rounded-md px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
-                autoFocus
-              />
-              <span className="text-sm text-muted-foreground">%</span>
-              <Button size="sm" onClick={handleSave} disabled={update.isPending}>
-                <Check className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </>
-          ) : (
-            <>
-              <span className="text-2xl font-bold text-primary">{currentRate}%</span>
-              <Button size="sm" variant="outline" onClick={() => { setValue(String(currentRate)); setEditing(true) }}>
-                <Pencil className="h-4 w-4 mr-1" />
-                แก้ไข
-              </Button>
-            </>
-          )}
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">% เจ้าคือ cap สูงสุดที่บ้านแต่ละหลังจะได้รับได้</p>
-      </CardContent>
-    </Card>
-  )
-}
-
-function HouseRow({ house, agentRate }: { house: House; agentRate: number }) {
+function HouseRow({ house }: { house: House }) {
   const update = useUpdateHouse()
   const deleteHouse = useDeleteHouse()
   const [editing, setEditing] = useState(false)
@@ -107,7 +46,7 @@ function HouseRow({ house, agentRate }: { house: House; agentRate: number }) {
               type="number"
               step="0.01"
               min="0"
-              max={agentRate}
+              max="100"
               value={rate}
               onChange={(e) => setRate(e.target.value)}
               className="w-20 h-9 border border-border rounded-md px-2 text-sm font-mono text-right focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
@@ -145,7 +84,7 @@ function HouseRow({ house, agentRate }: { house: House; agentRate: number }) {
   )
 }
 
-function AddHouseForm({ agentRate, onDone }: { agentRate: number; onDone: () => void }) {
+function AddHouseForm({ onDone }: { onDone: () => void }) {
   const create = useCreateHouse()
   const [name, setName] = useState('')
   const [rate, setRate] = useState('0')
@@ -173,7 +112,7 @@ function AddHouseForm({ agentRate, onDone }: { agentRate: number; onDone: () => 
           type="number"
           step="0.01"
           min="0"
-          max={agentRate}
+          max="100"
           value={rate}
           onChange={(e) => setRate(e.target.value)}
           className="w-20 h-9 border border-border rounded-md px-2 text-sm font-mono text-right focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
@@ -193,10 +132,7 @@ function AddHouseForm({ agentRate, onDone }: { agentRate: number; onDone: () => 
 
 export default function HousesPage() {
   const { data: houses, isLoading } = useHouses()
-  const { data: agentRateData } = useAgentRate()
   const [adding, setAdding] = useState(false)
-
-  const agentRate = agentRateData?.agent_commission_rate ?? 0
 
   if (isLoading) return <LoadingSpinner className="mt-20" size="lg" />
 
@@ -209,19 +145,17 @@ export default function HousesPage() {
         </Button>
       </PageHeader>
 
-      <AgentRateSection />
-
       <Card>
         <CardHeader>
           <CardTitle className="text-base">รายการบ้าน</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {adding && (
-            <AddHouseForm agentRate={agentRate} onDone={() => setAdding(false)} />
+            <AddHouseForm onDone={() => setAdding(false)} />
           )}
           {houses && houses.length > 0 ? (
             houses.map((house) => (
-              <HouseRow key={house.id} house={house} agentRate={agentRate} />
+              <HouseRow key={house.id} house={house} />
             ))
           ) : (
             !adding && (

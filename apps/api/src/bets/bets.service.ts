@@ -17,7 +17,6 @@ import { LotteryRound } from '../entities/lottery-round.entity'
 import { LotteryResult } from '../entities/lottery-result.entity'
 import { LotteryType } from '../entities/lottery-type.entity'
 import { House } from '../entities/house.entity'
-import { SystemConfig } from '../entities/system-config.entity'
 import { BetStatus, RestrictionType, RoundStatus, ResultStructure, BetType, CreateBetDto, BET_TYPE_LABEL } from '@lotto/shared'
 import { getWinningDigits, isMatch } from './prize-checker'
 
@@ -31,7 +30,6 @@ export class BetsService {
     @InjectRepository(LotteryRound) private readonly roundsRepo: Repository<LotteryRound>,
     @InjectRepository(LotteryType) private readonly lotteryTypesRepo: Repository<LotteryType>,
     @InjectRepository(House) private readonly housesRepo: Repository<House>,
-    @InjectRepository(SystemConfig) private readonly configRepo: Repository<SystemConfig>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -72,9 +70,7 @@ export class BetsService {
       const house = await this.housesRepo.findOne({ where: { id: houseId } })
       if (house) houseRate = new Decimal(house.commission_rate)
     }
-    const cfg = await this.configRepo.findOne({ where: { key: 'agent_commission_rate' } })
-    const agentRate = new Decimal(cfg?.value ?? 0)
-    return { houseRate, agentRate }
+    return { houseRate, agentRate: new Decimal(100) }
   }
 
   async create(dto: CreateBetDto, userId: string) {
