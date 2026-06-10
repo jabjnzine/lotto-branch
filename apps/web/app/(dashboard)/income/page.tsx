@@ -119,15 +119,14 @@ export default function IncomePage() {
                 {/* Commission summary */}
                 {(parseFloat(summary.totalHouseCommission ?? '0') > 0 ||
                   parseFloat(summary.totalAgentCommission ?? '0') > 0) && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                    <p className="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" />
-                      ค่าคอมมิชชั่น
+                  <div className="rounded-lg border border-border bg-card p-3">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
+                      <Users className="h-3.5 w-3.5 text-primary" />
+                      สรุปค่าคอม
                     </p>
                     <div className="flex flex-wrap gap-4 text-sm tabular-nums">
-                      <span className="text-slate-600">คอมบ้าน <span className="font-semibold text-amber-700">{formatCurrency(summary.totalHouseCommission ?? '0')}</span></span>
-                      <span className="text-slate-600">คอมเจ้า <span className="font-semibold text-amber-700">{formatCurrency(summary.totalAgentCommission ?? '0')}</span></span>
-                      <span className="text-slate-600">ยอดสุทธิ <span className="font-semibold text-slate-800">{formatCurrency(summary.netAmount ?? summary.totalReceived)}</span></span>
+                      <span className="text-muted-foreground">จ่ายให้บ้าน <span className="font-semibold text-foreground">{formatCurrency(summary.totalHouseCommission ?? '0')}</span></span>
+                      <span className="text-muted-foreground">รายได้เจ้า <span className="font-semibold text-primary">{formatCurrency(summary.totalAgentCommission ?? '0')}</span></span>
                     </div>
                   </div>
                 )}
@@ -256,7 +255,7 @@ export default function IncomePage() {
 
                 {/* Per-house breakdown */}
                 {perHouse && perHouse.length > 0 && (
-                  <div className="overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
+                  <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
                     <div
                       className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white"
                       style={{ backgroundColor: POS_BLUE }}
@@ -267,22 +266,20 @@ export default function IncomePage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-slate-100 text-xs text-slate-400">
+                          <tr className="border-b border-border text-xs text-muted-foreground">
                             <th className="px-4 py-2 text-left">บ้าน</th>
                             <th className="px-4 py-2 text-right">ยอดรับ</th>
-                            <th className="px-4 py-2 text-right">คอมบ้าน</th>
-                            <th className="px-4 py-2 text-right">คอมเจ้า</th>
-                            <th className="px-4 py-2 text-right">ยอดสุทธิ</th>
+                            <th className="px-4 py-2 text-right">จ่ายให้บ้าน</th>
+                            <th className="px-4 py-2 text-right">รายได้เจ้า</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody className="divide-y divide-border">
                           {perHouse.map((h) => (
-                            <tr key={h.houseId ?? 'none'} className="hover:bg-slate-50">
-                              <td className="px-4 py-2.5 font-medium text-slate-700">{h.houseName}</td>
-                              <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(h.received)}</td>
-                              <td className="px-4 py-2.5 text-right tabular-nums text-amber-600">{formatCurrency(h.houseCommission)}</td>
-                              <td className="px-4 py-2.5 text-right tabular-nums text-amber-600">{formatCurrency(h.agentCommission)}</td>
-                              <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-slate-800">{formatCurrency(h.netAmount)}</td>
+                            <tr key={h.houseId ?? 'none'} className="hover:bg-muted/50">
+                              <td className="px-4 py-2.5 font-medium text-foreground">{h.houseName}</td>
+                              <td className="px-4 py-2.5 text-right tabular-nums text-foreground">{formatCurrency(h.received)}</td>
+                              <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">{formatCurrency(h.houseCommission)}</td>
+                              <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-primary">{formatCurrency(h.agentCommission)}</td>
                             </tr>
                           ))}
                         </tbody>

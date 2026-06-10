@@ -110,15 +110,24 @@ export default function DashboardPage() {
           </div>
           <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${todayIncome && Number(todayIncome.profit) > 0 ? 'bg-green-50' : todayIncome && Number(todayIncome.profit) < 0 ? 'bg-red-50' : 'bg-muted'}`}>
-                <TrendingUp className={`h-5 w-5 ${todayIncome && Number(todayIncome.profit) > 0 ? 'text-green-600' : todayIncome && Number(todayIncome.profit) < 0 ? 'text-red-500' : 'text-muted-foreground'}`} />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">กำไร/ขาดทุน</p>
-                <p className={`text-xl font-bold tabular-nums ${todayIncome && Number(todayIncome.profit) > 0 ? 'text-green-600' : todayIncome && Number(todayIncome.profit) < 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
-                  {todayIncome ? `${todayIncome.isProfitable ? '+' : ''}${formatCurrency(todayIncome.profit)}` : formatCurrency(0)} <span className="text-sm font-normal text-muted-foreground">บาท</span>
-                </p>
-              </div>
+              {(() => {
+                const myProfit = todayIncome
+                  ? parseFloat(todayIncome.totalAgentCommission ?? '0') - parseFloat(todayIncome.totalPayout ?? '0')
+                  : 0
+                return (
+                  <>
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${myProfit > 0 ? 'bg-green-50' : myProfit < 0 ? 'bg-red-50' : 'bg-muted'}`}>
+                      <TrendingUp className={`h-5 w-5 ${myProfit > 0 ? 'text-green-600' : myProfit < 0 ? 'text-red-500' : 'text-muted-foreground'}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">กำไร/ขาดทุน</p>
+                      <p className={`text-xl font-bold tabular-nums ${myProfit > 0 ? 'text-green-600' : myProfit < 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                        {myProfit > 0 ? '+' : ''}{formatCurrency(myProfit)} <span className="text-sm font-normal text-muted-foreground">บาท</span>
+                      </p>
+                    </div>
+                  </>
+                )
+              })()}
             </div>
           </div>
         </div>
@@ -132,20 +141,16 @@ export default function DashboardPage() {
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
           <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
             <Users className="h-3.5 w-3.5 text-primary" />
-            ค่าคอมมิชชั่นวันนี้
+            สรุปค่าคอมวันนี้
           </p>
-          <div className="grid grid-cols-3 gap-4 text-sm tabular-nums">
+          <div className="grid grid-cols-2 gap-4 text-sm tabular-nums">
             <div>
-              <p className="text-xs text-muted-foreground mb-0.5">คอมบ้าน</p>
-              <p className="font-semibold text-primary">{formatCurrency(todayIncome.totalHouseCommission ?? '0')} <span className="text-xs font-normal text-muted-foreground">บาท</span></p>
+              <p className="text-xs text-muted-foreground mb-0.5">จ่ายให้บ้าน</p>
+              <p className="font-semibold text-foreground">{formatCurrency(todayIncome.totalHouseCommission ?? '0')} <span className="text-xs font-normal text-muted-foreground">บาท</span></p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-0.5">คอมเจ้า</p>
+              <p className="text-xs text-muted-foreground mb-0.5">รายได้เจ้า</p>
               <p className="font-semibold text-primary">{formatCurrency(todayIncome.totalAgentCommission ?? '0')} <span className="text-xs font-normal text-muted-foreground">บาท</span></p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">ยอดสุทธิ</p>
-              <p className="font-semibold text-foreground">{formatCurrency(todayIncome.netAmount ?? todayIncome.totalReceived)} <span className="text-xs font-normal text-muted-foreground">บาท</span></p>
             </div>
           </div>
         </div>
