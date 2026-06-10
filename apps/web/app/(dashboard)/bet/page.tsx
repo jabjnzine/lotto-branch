@@ -64,7 +64,7 @@ function itemId() {
 
 export default function BetPage() {
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null)
-  const [selectedBetType, setSelectedBetType] = useState<BetType>(BetType.THREE_TOP)
+  const [selectedBetTypes, setSelectedBetTypes] = useState<Set<BetType>>(new Set([BetType.THREE_TOP]))
   const [number, setNumber] = useState('')
   const [amount, setAmount] = useState('')
   const [selectedHouseId, setSelectedHouseId] = useState<string | null>(null)
@@ -146,14 +146,16 @@ export default function BetPage() {
     if (!activeBetGroupId) return
     const group = betTypeGroups.find((g) => g.groupId === activeBetGroupId)
     if (!group) return
-    if (!group.betTypes.includes(selectedBetType)) {
-      setSelectedBetType(group.betTypes[0])
+    const hasAnyInGroup = group.betTypes.some((bt) => selectedBetTypes.has(bt))
+    if (!hasAnyInGroup) {
+      setSelectedBetTypes(new Set([group.betTypes[0]]))
       setNumber('')
       setIsReverse(false)
     }
-  }, [activeBetGroupId, betTypeGroups, selectedBetType])
+  }, [activeBetGroupId, betTypeGroups, selectedBetTypes])
 
-  const maxLength = BET_TYPE_DIGIT_COUNT[selectedBetType] ?? 2
+  const firstSelectedType = [...selectedBetTypes][0] ?? BetType.THREE_TOP
+  const maxLength = BET_TYPE_DIGIT_COUNT[firstSelectedType] ?? 2
   const canReverse = maxLength === 2 || maxLength === 3
 
   const drawDateLabel = currentRound
@@ -177,43 +179,54 @@ export default function BetPage() {
       return
     }
 
-    // เช็คเลขอั้น
-    const restriction = restrictions?.find(
-      (r: { number: string; bet_type: string; restriction_type: string; limit_amount?: string | null }) =>
-        r.number === number && r.bet_type === selectedBetType,
-    )
-    if (restriction) {
-      if (restriction.restriction_type === RestrictionType.CLOSED) {
-        setAlertDialog({
-          show: true,
-          title: 'เลขอั้น',
-          message: `เลข ${number} (${BET_TYPE_LABEL[selectedBetType]}) ปิดรับแล้ว`,
-        })
-        return
-      }
-      if (restriction.restriction_type === RestrictionType.LIMITED && restriction.limit_amount) {
-        const limit = parseFloat(restriction.limit_amount)
-        const alreadyInDraft = draftItems
-          .filter((item) => item.number === number && item.bet_type === selectedBetType)
-          .reduce((sum, item) => sum + item.amount, 0)
-        if (alreadyInDraft + numAmount > limit) {
+    // เช็คเลขอั้นทุก type ที่เลือก
+    for (const bt of selectedBetTypes) {
+      const restriction = restrictions?.find(
+        (r: { number: string; bet_type: string; restriction_type: string; limit_amount?: string | null }) =>
+          r.number === number && r.bet_type === bt,
+      )
+      if (restriction) {
+        if (restriction.restriction_type === RestrictionType.CLOSED) {
           setAlertDialog({
             show: true,
-            title: 'วงเงินอั้นเต็ม',
-            message: `เลข ${number} รับได้อีก ${Math.max(0, limit - alreadyInDraft).toLocaleString()} บาท`,
+            title: 'เลขอั้น',
+            message: `เลข ${number} (${BET_TYPE_LABEL[bt]}) ปิดรับแล้ว`,
           })
           return
+        }
+        if (restriction.restriction_type === RestrictionType.LIMITED && restriction.limit_amount) {
+          const limit = parseFloat(restriction.limit_amount)
+          const alreadyInDraft = draftItems
+            .filter((item) => item.number === number && item.bet_type === bt)
+            .reduce((sum, item) => sum + item.amount, 0)
+          if (alreadyInDraft + numAmount > limit) {
+            setAlertDialog({
+              show: true,
+              title: 'วงเงินอั้นเต็ม',
+              message: `เลข ${number} (${BET_TYPE_LABEL[bt]}) รับได้อีก ${Math.max(0, limit - alreadyInDraft).toLocaleString()} บาท`,
+            })
+            return
+          }
         }
       }
     }
 
-    addItem({ id: itemId(), number, bet_type: selectedBetType, amount: numAmount })
-
-    if (isReverse && canReverse) {
-      const reverseNum = number.split('').reverse().join('')
-      if (reverseNum !== number) {
-        addItem({ id: itemId(), number: reverseNum, bet_type: selectedBetType, amount: numAmount })
+    const getNumbers = () => {
+      if (isReverse && canReverse) {
+        const perms = new Set<string>()
+        const permute = (arr: string[], current: string) => {
+          if (arr.length === 0) { perms.add(current); return }
+          arr.forEach((d, i) => permute([...arr.slice(0, i), ...arr.slice(i + 1)], current + d))
+        }
+        permute(number.split(''), '')
+        return [...perms]
       }
+      return [number]
+    }
+
+    const numbers = getNumbers()
+    for (const bt of selectedBetTypes) {
+      numbers.forEach((n) => addItem({ id: itemId(), number: n, bet_type: bt, amount: numAmount }))
     }
 
     setNumber('')
@@ -382,7 +395,7 @@ export default function BetPage() {
             const lt = lotteryTypes.find((t) => t.id === id)
             setSelectedTypeId(id)
             const types = LOTTERY_TYPE_BET_TYPES[lt?.code ?? ''] ?? []
-            setSelectedBetType(types[0] ?? BetType.TWO_BOTTOM)
+            setSelectedBetTypes(new Set([types[0] ?? BetType.TWO_BOTTOM]))
             clearItems()
             setIsReverse(false)
           }}
@@ -558,12 +571,9 @@ export default function BetPage() {
                           type="button"
                           onClick={() => {
                             setActiveBetGroupId(group.groupId)
-                            const first = group.betTypes[0]
-                            setSelectedBetType(first)
+                            setSelectedBetTypes(new Set([group.betTypes[0]]))
                             setNumber('')
-                            if (BET_TYPE_DIGIT_COUNT[first] !== 2 && BET_TYPE_DIGIT_COUNT[first] !== 3) {
-                              setIsReverse(false)
-                            }
+                            setIsReverse(false)
                           }}
                           className={cn(
                             'flex-1 rounded-lg border py-2.5 text-center text-sm font-semibold transition-colors',
@@ -585,18 +595,24 @@ export default function BetPage() {
                           (pr: { bet_type: string }) => pr.bet_type === bt,
                         )
                         const rateText = formatRateBox(row?.payout_rate)
-                        const isSel = selectedBetType === bt
+                        const isSel = selectedBetTypes.has(bt)
                         return (
                           <button
                             key={bt}
                             type="button"
                             disabled={isClosed}
                             onClick={() => {
-                              setSelectedBetType(bt)
+                              setSelectedBetTypes((prev) => {
+                                const next = new Set(prev)
+                                if (next.has(bt)) {
+                                  next.delete(bt)
+                                  if (next.size === 0) next.add(bt) // ต้องเลือกอย่างน้อย 1
+                                } else {
+                                  next.add(bt)
+                                }
+                                return next
+                              })
                               setNumber('')
-                              if (BET_TYPE_DIGIT_COUNT[bt] !== 2 && BET_TYPE_DIGIT_COUNT[bt] !== 3) {
-                                setIsReverse(false)
-                              }
                             }}
                             className={cn(
                               'flex min-h-[52px] w-full overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors disabled:opacity-50',
